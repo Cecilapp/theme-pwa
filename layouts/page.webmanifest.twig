@@ -12,11 +12,10 @@
   "icons": [
 {%- for icon in site.manifest.icons -%}
   {
-{% for key, value in icon %}
+    {%- for key, value in icon ~%}
     "{{ key }}": {% if key == 'src' %}"{{ url(value) }}"{% else %}"{{ value }}"{% endif %}
-{% if loop.length > 1 and not loop.last %},{% endif %}
-
-{% endfor %}
+    {%- if loop.length > 1 and not loop.last %},{% endif ~%}
+    {%- endfor ~%}
   }{% if loop.length > 1 and not loop.last %},{% endif %}
 {% endfor %}]
 {%- if site.serviceworker is defined and site.serviceworker.enabled %},

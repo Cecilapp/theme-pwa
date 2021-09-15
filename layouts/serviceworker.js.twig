@@ -8,21 +8,21 @@ var PATH_TO_IGNORE = [{{ site.serviceworker.ignore|map(i => "'#{i.path}'") | joi
 
 // pre-cache pages
 var urlsToCache = [];
-{% for page in site.pages|filter(p => p.redirect is not defined)|sort((a, b) => a.path > b.path) %}
+{% for page in site.pages.all|filter(p => p.redirect is not defined)|sort((a, b) => a.path > b.path) %}
 urlsToCache.push('{{ url(page) }}');
-{% if site.serviceworker.debug|default(false) %}
+  {%- if site.serviceworker.debug|default(false) ~%}
 console.log('[SW] pre-cache page "{{ url(page) }}"');
-{% endif %}
+  {%- endif ~%}
 {% endfor %}
 // pre-cache files
-{% block precache %}{% endblock %}
+{%- block precache %}{% endblock -%}
 {% if site.serviceworker.precache is defined %}
-{% for file in site.serviceworker.precache %}
+  {%- for file in site.serviceworker.precache ~%}
 urlsToCache.push('{{ url(file) }}');
-{% if site.serviceworker.debug|default(false) %}
+    {%- if site.serviceworker.debug|default(false) ~%}
 console.log('[SW] pre-cache file "{{ url(file) }}"');
-{% endif %}
-{% endfor %}
+    {%- endif ~%}
+  {%- endfor ~%}
 {% endif %}
 
 // install service worker
@@ -48,8 +48,8 @@ self.addEventListener('activate', function(event) {
       return Promise.all(keyList.map(function(key) {
         // new version?
         if (key !== CACHE) {
-          // notification
           {%- if site.serviceworker.notification.enabled|default(false) ~%}
+          // notification
           console.log('[SW] Notification enabled');
           const title = "{{ site.serviceworker.notification.message|default('New version') }}";
           const options = {
@@ -94,7 +94,7 @@ self.addEventListener('fetch', function(event) {
       }
     });
   } catch (e) {
-    console.log('[SW] Fetch error: ' + e.message);
+    console.log('[SW] ' + e.message);
     return;
   }
   {%- if site.serviceworker.debug|default(false) ~%}

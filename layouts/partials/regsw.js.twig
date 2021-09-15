@@ -1,21 +1,21 @@
     <script>{% apply minify_js %}
       if ('serviceWorker' in navigator) {
-{% if site.serviceworker.notification.enabled|default(false) %}
+        {%- if site.serviceworker.notification.enabled|default(false) ~%}
         Notification.requestPermission(permission => {
           if (!('permission' in Notification)) {
             Notification.permission = permission;
           }
           return permission;
         })
-{% endif %}
-{% if site.serviceworker is defined and site.serviceworker.enabled %}
+        {%- endif ~%}
+        {%- if site.serviceworker is defined and site.serviceworker.enabled ~%}
         navigator.serviceWorker.register('{{ url("serviceworker.js") }}').then(function (registration) {
           console.log('[SW] Registration successful with scope: ', registration.scope);
         }).catch(function (err) {
           console.log('[SW] Failed: ', err);
         });
-{% endif %}
-{% if site.serviceworker is defined and not site.serviceworker.enabled %}
+        {%- endif ~%}
+        {%- if site.serviceworker is defined and not site.serviceworker.enabled ~%}
         caches.keys().then(function(keyList) {
           Promise.all(keyList.map(function(key) {
             console.log('[SW] Delete cache');
@@ -28,14 +28,14 @@
             registration.unregister()
           })
         })
-{% endif %}
+        {%- endif ~%}
       }
-{% if site.serviceworker is defined and site.serviceworker.debug|default(false) %}
+      {%- if site.serviceworker is defined and site.serviceworker.debug|default(false) ~%}
       navigator.webkitTemporaryStorage.queryUsageAndQuota(
         function (usedBytes, grantedBytes) {
           console.log('Cache size: ', (usedBytes / 1048576).toFixed(2), ' / ', (grantedBytes / 1048576).toFixed(2), 'Mo');
         },
         function (e) { console.log('Error', e); }
       );
-{% endif %}
+      {%- endif ~%}
     {% endapply %}</script>
