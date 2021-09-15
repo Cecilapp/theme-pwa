@@ -1,6 +1,7 @@
 var CACHE_VERSION = "{{ 'now'|date('U') }}";
 var CACHE_NAME = '{{ site.title|slugify }}';
 var CACHE = CACHE_NAME + '-v' + CACHE_VERSION;
+var PATH_TO_IGNORE = [];
 {% if site.serviceworker.ignore is defined and site.serviceworker.ignore %}
 var PATH_TO_IGNORE = [{{ site.serviceworker.ignore|map(i => "'#{i.path}'") | join(', ')}}];
 {% endif %}
@@ -93,6 +94,7 @@ self.addEventListener('fetch', function(event) {
       }
     });
   } catch (e) {
+    console.log('[SW] Fetch error: ' + e.message);
     return;
   }
   {%- if site.serviceworker.debug|default(false) ~%}
