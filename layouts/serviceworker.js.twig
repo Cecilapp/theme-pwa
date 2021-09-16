@@ -6,32 +6,32 @@ var PATH_TO_IGNORE = [];
 var PATH_TO_IGNORE = [{{ site.serviceworker.ignore|map(i => "'#{i.path}'") | join(', ')}}];
 {% endif %}
 
-// pre-cache pages
+// Pages to cache
 var urlsToCache = [];
 {% for page in site.pages|filter(p => p.published == true and p.redirect is not defined)|sort((a, b) => a.path > b.path) %}
 urlsToCache.push('{{ url(page) }}');
   {%- if site.serviceworker.debug|default(false) ~%}
-console.log('[SW] pre-cache page "{{ url(page) }}"');
+console.log('[SW] Page to cache "{{ url(page) }}"');
   {%- endif ~%}
 {% endfor %}
-// pre-cache files
+// Files to cache
 {%- block precache %}{% endblock -%}
 {% if site.serviceworker.precache is defined %}
   {%- for file in site.serviceworker.precache ~%}
 urlsToCache.push('{{ url(file) }}');
     {%- if site.serviceworker.debug|default(false) ~%}
-console.log('[SW] pre-cache file "{{ url(file) }}"');
+console.log('[SW] File to cache "{{ url(file) }}"');
     {%- endif ~%}
   {%- endfor ~%}
 {% endif %}
 
-// install service worker
+// Pre-cache pages/files
 self.addEventListener('install', function(event) {
   console.log('[SW] Install');
   event.waitUntil(
     self.skipWaiting(
       caches.open(CACHE).then(function(cache) {
-        console.log('[SW] Pre-cache');
+        console.log('[SW] Pre-cache pages/files');
         urlsToCache.forEach(function (url) {
           cache.add(url).catch(error => console.error(`[SW] Can't add "${url}" to cache`));
         });
@@ -40,16 +40,16 @@ self.addEventListener('install', function(event) {
   );
 });
 
-// activate service worker
+// Remove old cache
 self.addEventListener('activate', function(event) {
   console.log('[SW] Activate');
   event.waitUntil(
     caches.keys().then(function(keyList) {
       return Promise.all(keyList.map(function(key) {
-        // new version?
+        // New version?
         if (key !== CACHE) {
           {%- if site.serviceworker.notification.enabled|default(false) ~%}
-          // notification
+          // Notification
           console.log('[SW] Notification enabled');
           const title = "{{ site.serviceworker.notification.message|default('New version') }}";
           const options = {
@@ -62,7 +62,7 @@ self.addEventListener('activate', function(event) {
             event.waitUntil(clients.openWindow('{{ site.baseurl }}'));
           });
           {%- endif ~%}
-          // flush cache
+          // Flush cache
           console.log(`[SW] Remove old cache '${key}'`);
           return caches.delete(key);
         }
@@ -71,22 +71,22 @@ self.addEventListener('activate', function(event) {
   );
 });
 
-// fetch data
+// Fetch data
 self.addEventListener('fetch', function(event) {
-  // ignore non-GET requests
+  // Ignore non-GET requests
   if (event.request.method !== 'GET') {
     return;
   }
-  // ignore non-local resources
+  // Ignore non-local resources
   url = new URL(event.request.url);
   if (!(url.origin == location.origin)) {
     return;
   }
-  // ignore Cecil's watcher
+  // Ignore Cecil's watcher
   if (url.pathname == '/watcher') {
     return;
   }
-  // ignore some paths
+  // Ignore some paths (optional)
   try {
     PATH_TO_IGNORE.forEach(function (path) {
       if (url.pathname.indexOf(path) > -1) {
@@ -102,20 +102,20 @@ self.addEventListener('fetch', function(event) {
   {%- endif ~%}
   event.respondWith(
     caches.match(event.request).then(function(response) {
-      // return response from cache if exist
+      // Return response from cache if exist
       if (response) {
         return response;
       }
-      // store visited ressource to cache
+      // Store visited ressource to cache
       var fetchRequest = event.request.clone();
       return fetch(fetchRequest).then(function(response) {
-        // ignore if response is not valid
+        // Ignore if response is not valid
         if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
         var responseToCache = response.clone();
         caches.open(CACHE).then(function(cache) {
-          // ignore "data" URL
+          // Ignore "data" URL
           if (event.request.url.startsWith('data:')) {
             return;
           }
@@ -127,7 +127,7 @@ self.addEventListener('fetch', function(event) {
         return response;
       })
       .catch(function(response) {
-        // offline image
+        // Offline image
         if (event.request.headers.get('Accept').indexOf('image') !== -1) {
           return new Response('<svg role="img" aria-labelledby="offline-title" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"><title id="offline-title">Offline</title><g fill="none" fill-rule="evenodd"><path fill="#D8D8D8" d="M0 0h400v300H0z"/><text fill="#505050" font-family="Helvetica Neue,Arial,Helvetica,sans-serif" font-size="72" font-style="italic"><tspan x="93" y="172">offline</tspan></text></g></svg>', {headers: {'Content-Type': 'image/svg+xml'}});
         }
