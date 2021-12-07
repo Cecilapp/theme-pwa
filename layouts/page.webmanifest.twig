@@ -22,7 +22,7 @@
   {%- if site.serviceworker.enabled|default(false) %},
   "serviceworker": {
     "src": "{{ site.serviceworker.file|default('serviceworker.js') }}",
-    "scope": "{{ site.baseurl }}",
+    "scope": "/",
     "use_cache": false
   }
   {%- endif ~%}
