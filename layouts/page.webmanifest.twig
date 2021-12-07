@@ -5,9 +5,9 @@
   "display": "{{ site.manifest.display|default('standalone') }}",
   "start_url": "{{ site.manifest.start_url|default('/') }}",
   "orientation": "{{ site.manifest.orientation|default('portrait') }}",
-  "background_color": "{{ site.manifest.background_color }}",
-  "theme_color": "{{ site.manifest.theme_color }}",
-  "lang": "{{ site.language }}",
+  "background_color": "{{ site.manifest.background_color|default('#FFFFFF') }}",
+  "theme_color": "{{ site.manifest.theme_color|default('#202020') }}",
+  "lang": "{{ site.language|default('en') }}",
   "dir": "{{ site.manifest.dir|default('ltr') }}",
   "icons": [
   {%- for icon in site.manifest.icons -%}
