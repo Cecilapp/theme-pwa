@@ -25,5 +25,17 @@
     "scope": "/",
     "use_cache": false
   }
+  {%- endif -%}
+  {%- if site.manifest.shortcuts|default(false) and site.menus.main|length > 0 %},
+  "shortcuts": [
+  {%- for item in site.menus.main ~%}
+    {
+      "name": "{{ item.name }}",
+      "short_name": "{{ item.name }}",
+      "url": "{{ url(item.url) }}",
+      "icons": [{ "src": "{{ asset(site.manifest.icons[0].src)|url({canonical: false}) }}", "sizes": "{{ site.manifest.icons[0].sizes }}" }]
+    }{% if loop.length > 1 and not loop.last %},{% endif ~%}
+  {%- endfor ~%}
+  ]
   {%- endif ~%}
 }

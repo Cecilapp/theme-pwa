@@ -16,6 +16,7 @@ manifest:
     - src: icon-512x512.png
       sizes: 512x512
       type: image/png
+  shortcuts: false
 serviceworker:
   enabled: false
   notification:
