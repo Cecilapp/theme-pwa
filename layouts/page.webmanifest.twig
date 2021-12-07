@@ -10,15 +10,16 @@
   "lang": "{{ site.language|default('en') }}",
   "dir": "{{ site.manifest.dir|default('ltr') }}",
   "icons": [
-  {%- for icon in site.manifest.icons -%}
-  {
-    {%- for key, value in icon ~%}
-    "{{ key }}": {% if key == 'src' %}"{{ url(value) }}"{% else %}"{{ value }}"{% endif %}
-    {%- if loop.length > 1 and not loop.last %},{% endif ~%}
-    {%- endfor ~%}
-  }{% if loop.length > 1 and not loop.last %},{% endif %}
-  {% endfor %}]
-  {%- if site.serviceworker is defined and site.serviceworker.enabled %},
+  {%- for icon in site.manifest.icons ~%}
+    {
+      {%- for key, value in icon ~%}
+      "{{ key }}": {% if key == 'src' %}"{{ asset(value)|url({canonical: false}) }}"{% else %}"{{ value }}"{% endif %}
+      {%- if loop.length > 1 and not loop.last %},{% endif ~%}
+      {%- endfor ~%}
+    }{% if loop.length > 1 and not loop.last %},{% endif ~%}
+  {%- endfor ~%}
+  ]
+  {%- if site.serviceworker.enabled|default(false) %},
   "serviceworker": {
     "src": "{{ site.serviceworker.file|default('serviceworker.js') }}",
     "scope": "{{ site.baseurl }}",
