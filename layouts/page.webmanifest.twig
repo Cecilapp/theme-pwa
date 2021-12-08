@@ -28,7 +28,7 @@
   {%- endif -%}
   {%- if site.manifest.shortcuts|default(false) and site.menus.main|length > 0 %},
   "shortcuts": [
-  {%- for item in site.menus.main ~%}
+  {%- for item in site.menus.main|sort_by_weight ~%}
     {
       "name": "{{ item.name }}",
       "short_name": "{{ item.name }}",
