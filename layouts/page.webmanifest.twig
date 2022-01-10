@@ -9,15 +9,18 @@
   "theme_color": "{{ site.manifest.theme_color|default('#202020') }}",
   "lang": "{{ site.language|default('en') }}",
   "dir": "{{ site.manifest.dir|default('ltr') }}",
-  "icons": [
-  {%- for icon in site.manifest.icons ~%}
+  {%- set icons ~%}
+    {%- for icon in site.manifest.icons ~%}
     {
       {%- for key, value in icon ~%}
       "{{ key }}": {% if key == 'src' %}"{{ asset(value)|url({canonical: false}) }}"{% else %}"{{ value }}"{% endif %}
       {%- if loop.length > 1 and not loop.last %},{% endif ~%}
       {%- endfor ~%}
     }{% if loop.length > 1 and not loop.last %},{% endif ~%}
-  {%- endfor ~%}
+    {%- endfor ~%}
+  {%- endset ~%}
+  "icons": [
+    {{-  icons ~}}
   ]
   {%- if site.serviceworker.enabled|default(false) %},
   "serviceworker": {
@@ -33,7 +36,9 @@
       "name": "{{ item.name }}",
       "short_name": "{{ item.name }}",
       "url": "{{ url(item.url) }}",
-      "icons": [{ "src": "{{ asset(site.manifest.icons[0].src)|url({canonical: false}) }}", "sizes": "{{ site.manifest.icons[0].sizes }}" }]
+      "icons": [
+        {{-  icons ~}}
+      ]
     }{% if loop.length > 1 and not loop.last %},{% endif ~%}
   {%- endfor ~%}
   ]
