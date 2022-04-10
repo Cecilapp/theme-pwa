@@ -56,8 +56,9 @@ manifest:
 serviceworker:
   enabled: true
   precache:
+    - icon-192x192.png
     - icon-512x512.png
-    - css/style.css
+    - styles.css
   ignore:
     - name: 'cms'
       path: '/admin'
