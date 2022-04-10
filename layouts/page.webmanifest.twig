@@ -1,3 +1,13 @@
+{%- set icons %}
+  {%- for icon in site.manifest.icons -%}
+    {%- set icon_asset = asset(icon) -%}
+  {
+    "src": "{{ icon_asset|url }}",
+    "sizes": "{{ icon_asset.width }}x{{ icon_asset.height }}",
+    "type": "{{ icon_asset.subtype }}"
+  }{% if loop.length > 1 and not loop.last %},{% endif %}
+  {%- endfor %}
+{% endset -%}
 {
   "name": "{{ site.title }}",
   "short_name": "{{ site.title }}",
@@ -10,14 +20,8 @@
   "lang": "{{ site.language|default('en') }}",
   "dir": "{{ site.manifest.dir|default('ltr') }}",
   "icons": [
-  {%- for icon in site.manifest.icons -%}
-    {%- set icon_asset = asset(icon) -%}
-  {
-    "src": "{{ icon_asset|url }}",
-    "sizes": "{{ icon_asset.width }}x{{ icon_asset.height }}",
-    "type": "{{ icon_asset.subtype }}"
-  }{% if loop.length > 1 and not loop.last %},{% endif %}
-  {%- endfor %}]
+    {{-  icons -}}
+  ]
   {%- if site.serviceworker.enabled|default(false) %},
   "serviceworker": {
     "src": "{{ site.serviceworker.file|default('serviceworker.js') }}",
@@ -33,7 +37,7 @@
       "short_name": "{{ item.name }}",
       "url": "{{ url(item.url) }}",
       "icons": [
-        {{-  icons ~}}
+        {{-  icons -}}
       ]
     }{% if loop.length > 1 and not loop.last %},{% endif ~%}
   {%- endfor ~%}
