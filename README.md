@@ -40,9 +40,8 @@ manifest:
   background_color: '#FFFFFF'
   theme_color: '#202020'
   icons:
-    - src: icon-512x512.png
-      sizes: 512x512
-      type: image/png
+    - icon-192x192.png
+    - icon-512x512.png
 ```
 
 3. [Register the service worker](https://developers.google.com/web/fundamentals/primers/service-workers/registration#common_registration_boilerplate) in the main template file:  
