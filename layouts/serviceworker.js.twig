@@ -18,9 +18,9 @@ console.log('[SW] Page to cache "{{ url(page) }}"');
 {%- block precache %}{% endblock -%}
 {% if site.serviceworker.precache is defined %}
   {%- for file in site.serviceworker.precache ~%}
-urlsToCache.push('{{ url(file) }}');
+urlsToCache.push('{{ asset(file)|url }}');
     {%- if site.serviceworker.debug|default(false) ~%}
-console.log('[SW] File to cache "{{ url(file) }}"');
+console.log('[SW] File to cache "{{ asset(file)|url}}"');
     {%- endif ~%}
   {%- endfor ~%}
 {% endif %}
