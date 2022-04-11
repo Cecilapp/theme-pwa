@@ -18,22 +18,22 @@ composer require cecil/theme-serviceworker
 
 ## Usage
 
-1. Add `serviceworker` in the `theme` section of your `config.yml`:
+Add `serviceworker` in the `theme` section of your `config.yml`
 
 ```yaml
 theme:
   - serviceworker
 ```
 
-2. Add and configure the [web manifest](https://developer.mozilla.org/fr/docs/Web/Manifest):
+### Web manifest
 
-**`template`:**
+Add the [web manifest](https://developer.mozilla.org/fr/docs/Web/Manifest) in the HTML header:
 
 ```twig
 <link rel="manifest" href="{{ url('manifest') }}">
 ```
 
-**`config.yml`:**
+Configure it:
 
 ```yaml
 manifest:
@@ -44,21 +44,46 @@ manifest:
     - icon-512x512.png
 ```
 
-3. [Register the service worker](https://developers.google.com/web/fundamentals/primers/service-workers/registration#common_registration_boilerplate) in the main template file:  
+#### Optional
+
+Add [shortcuts](https://developer.mozilla.org/docs/Web/Manifest/shortcuts):
+
+```yaml
+manifest:
+  shortcuts: true
+```
+
+### Service worker
+
+[Register the service worker](https://developers.google.com/web/fundamentals/primers/service-workers/registration#common_registration_boilerplate) in the main template file:
 
 ```twig
 {% include 'partials/regsw.js.twig' %}
 ```
 
-4. Enable the service worker and define pre-cached files (optional) and/or ignored files (optional) in your `config.yml`:  
+Enable the service worker:
 
 ```yaml
 serviceworker:
   enabled: true
+```
+
+#### Optional
+
+Define pre-cached files:
+
+```yaml
+serviceworker:
   precache:
     - icon-192x192.png
     - icon-512x512.png
     - styles.css
+```
+
+Define ignored paths:
+
+```yaml
+serviceworker:
   ignore:
     - name: 'cms'
       path: '/admin'
