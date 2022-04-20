@@ -1,4 +1,4 @@
-    <script>{% apply minify_js %}
+    <script>{% apply minify_js ~%}
       if ('serviceWorker' in navigator) {
         {%- if site.serviceworker.notification.enabled|default(false) ~%}
         Notification.requestPermission(permission => {
