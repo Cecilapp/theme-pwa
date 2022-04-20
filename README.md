@@ -18,7 +18,7 @@ composer require cecil/theme-serviceworker
 
 ## Usage
 
-Add `serviceworker` in the `theme` section of your `config.yml`
+Add `serviceworker` in the `theme` section of your `config.yml`:
 
 ```yaml
 theme:
