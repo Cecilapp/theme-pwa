@@ -27,7 +27,7 @@ theme:
 
 ### Web manifest
 
-Add the [web manifest](https://developer.mozilla.org/fr/docs/Web/Manifest) in the HTML header:
+Add the [web manifest](https://developer.mozilla.org/fr/docs/Web/Manifest) in the HTML `<header>` of the main template:
 
 ```twig
 <link rel="manifest" href="{{ url('manifest') }}">
@@ -44,7 +44,7 @@ manifest:
     - icon-512x512.png
 ```
 
-#### Optional
+#### Web manifest Optional
 
 Add [shortcuts](https://developer.mozilla.org/docs/Web/Manifest/shortcuts):
 
@@ -55,7 +55,7 @@ manifest:
 
 ### Service worker
 
-[Register the service worker](https://developers.google.com/web/fundamentals/primers/service-workers/registration#common_registration_boilerplate) in the main template file:
+[Register the service worker](https://developers.google.com/web/fundamentals/primers/service-workers/registration#common_registration_boilerplate) before the end of the HTML `</body>` of the main template:
 
 ```twig
 {% include 'partials/regsw.js.twig' %}
@@ -68,7 +68,7 @@ serviceworker:
   enabled: true
 ```
 
-#### Optional
+#### Service worker Optional
 
 Define pre-cached files:
 
