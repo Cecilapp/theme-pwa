@@ -2,10 +2,12 @@ defaultpages:
   manifest:
     path: manifest
     output: webmanifest
+    #multilingual: false
   serviceworker:
     path: serviceworker
     layout: serviceworker
     output: js
+    multilingual: false
 manifest:
   background_color: '#FFFFFF'
   theme_color: '#202020'
