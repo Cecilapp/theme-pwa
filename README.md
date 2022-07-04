@@ -11,18 +11,18 @@
 ## Installation
 
 ```bash
-composer require cecil/theme-serviceworker
+composer require cecil/theme-pwa
 ```
 
-> Or [download the latest archive](https://github.com/Cecilapp/theme-serviceworker/releases/latest/) and uncompress its content in `themes/serviceworker`.
+> Or [download the latest archive](https://github.com/Cecilapp/theme-pwa/releases/latest/) and uncompress its content in `themes/pwa`.
 
 ## Usage
 
-Add `serviceworker` in the `theme` section of the `config.yml`:
+Add `pwa` in the `theme` section of the `config.yml`:
 
 ```yaml
 theme:
-  - serviceworker
+  - pwa
 ```
 
 ### Web manifest
