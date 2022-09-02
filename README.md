@@ -1,6 +1,6 @@
-# Cecil component theme: PWA
+# PWA component theme
 
-> The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to implement a [service worker](https://developers.google.com/web/fundamentals/getting-started/primers/service-workers#what_is_a_service_worker) to turn a website into a [Progressive Web App](https://developers.google.com/web/progressive-web-apps/).
+The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to implement a [service worker](https://developers.google.com/web/fundamentals/getting-started/primers/service-workers#what_is_a_service_worker) to turn a website into a [Progressive Web App](https://developers.google.com/web/progressive-web-apps/).
 
 ## Prerequisites
 
