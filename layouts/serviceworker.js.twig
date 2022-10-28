@@ -94,7 +94,9 @@ self.addEventListener('fetch', function(event) {
       }
     });
   } catch (e) {
+    {%- if site.serviceworker.debug|default(false) or getenv('CECIL_DEBUG')|default(false) ~%}
     console.log('[SW] ' + e.message);
+    {%- endif ~%}
     return;
   }
   {%- if site.serviceworker.debug|default(false) or getenv('CECIL_DEBUG')|default(false) ~%}
