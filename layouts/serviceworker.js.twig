@@ -8,7 +8,7 @@ var PATH_TO_IGNORE = [{{ site.serviceworker.ignore|map(i => "'#{i.path}'") | joi
 
 // Pages to cache
 var urlsToCache = [];
-{% for page in site.pages|filter(p => p.published == true and p.redirect is not defined)|sort((a, b) => a.path > b.path) %}
+{% for page in site.pages|filter(p => p.published == true and p.redirect is not defined and p.cache ?? true != false)|sort((a, b) => a.path > b.path) %}
 urlsToCache.push('{{ url(page) }}');
   {%- if site.serviceworker.debug|default(false) or getenv('CECIL_DEBUG')|default(false) ~%}
 console.log('[SW] Page to cache "{{ url(page) }}"');
