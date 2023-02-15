@@ -8,6 +8,7 @@ defaultpages:
     layout: serviceworker
     output: js
     multilingual: false
+    cache: false
 manifest:
   background_color: '#FFFFFF'
   theme_color: '#202020'
