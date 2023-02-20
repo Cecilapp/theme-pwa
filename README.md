@@ -58,7 +58,7 @@ manifest:
 [Register the service worker](https://developers.google.com/web/fundamentals/primers/service-workers/registration#common_registration_boilerplate) before the end of the HTML `</body>` of the main template:
 
 ```twig
-{% include 'partials/regsw.js.twig' %}
+{% include 'partials/regsw.js.twig' with {'site': site} only %}
 ```
 
 Enable the service worker:
