@@ -27,16 +27,15 @@ console.log('[SW] File to cache "{{ asset(file)|url}}"');
 
 // Pre-cache pages/files
 self.addEventListener('install', function(event) {
+  self.skipWaiting(); // install the new SW immediately
   console.log('[SW] Install');
   event.waitUntil(
-    self.skipWaiting(
-      caches.open(CACHE).then(function(cache) {
-        console.log('[SW] Pre-cache pages/files');
-        urlsToCache.forEach(function (url) {
-          cache.add(url).catch(error => console.error(`[SW] Can't add "${url}" to cache`));
-        });
-      })
-    )
+    caches.open(CACHE).then(function(cache) {
+      console.log('[SW] Pre-cache pages/files');
+      urlsToCache.forEach(function (url) {
+        cache.add(url).catch(error => console.error(`[SW] Can't add "${url}" to cache`));
+      });
+    })
   );
 });
 
