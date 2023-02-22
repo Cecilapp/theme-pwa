@@ -88,3 +88,12 @@ serviceworker:
     - name: 'cms'
       path: '/admin'
 ```
+
+Not pre-cache a specific page:
+
+```yaml
+---
+serviceworker:
+  precache: false
+---
+```
