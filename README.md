@@ -2,11 +2,20 @@
 
 The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to implement a [service worker](https://developers.google.com/web/fundamentals/getting-started/primers/service-workers#what_is_a_service_worker) to turn a website into a [Progressive Web App](https://developers.google.com/web/progressive-web-apps/).
 
+## Features
+
+- Generated and configurable Web manifest
+- No dependencies, vanilla JavaScript
+- Pre-caching of all published pages
+- Automatic caching of visited pages
+- Pre-caching of a list of assets
+- SVG image placeholorder
+
 ## Prerequisites
 
-* A [Cecil](https://cecil.app) website
-* A [supported browser](https://developer.mozilla.org/docs/Web/API/Service_Worker_API/Using_Service_Workers#Compatibilit%C3%A9_des_navigateurs)
-* HTTPS
+- A [Cecil](https://cecil.app) website
+- A [supported browser](https://developer.mozilla.org/docs/Web/API/Service_Worker_API/Using_Service_Workers#Compatibilit%C3%A9_des_navigateurs)
+- HTTPS
 
 ## Installation
 
@@ -89,7 +98,7 @@ serviceworker:
       path: '/admin'
 ```
 
-Not pre-cache a specific page:
+Do not pre-cache a specific page:
 
 ```yaml
 ---
