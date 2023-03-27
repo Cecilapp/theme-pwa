@@ -72,13 +72,9 @@ self.addEventListener('activate', function(event) {
 
 // Fetch data
 self.addEventListener('fetch', function(event) {
+  url = new URL(event.request.url);
   // Ignore non-GET requests
   if (event.request.method !== 'GET') {
-    return;
-  }
-  // Ignore non-local resources
-  url = new URL(event.request.url);
-  if (!(url.origin == location.origin)) {
     return;
   }
   // Ignore Cecil's watcher
@@ -116,6 +112,10 @@ self.addEventListener('fetch', function(event) {
         }
         var responseToCache = response.clone();
         caches.open(CACHE).then(function(cache) {
+          // Ignore non-local resources
+          if (!(url.origin == location.origin)) {
+            return;
+          }
           // Ignore "data" URL
           if (event.request.url.startsWith('data:')) {
             return;
