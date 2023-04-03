@@ -21,4 +21,4 @@ serviceworker:
   enabled: false
   notification:
     enabled: false
-    message: 'New version'
+    message: 'Website updated.'
