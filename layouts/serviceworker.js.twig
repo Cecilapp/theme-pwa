@@ -58,8 +58,8 @@ self.addEventListener('activate', function(event) {
           self.addEventListener('notificationclick', function (event) {
             const clickedNotification = event.notification;
             clickedNotification.close();
-            event.waitUntil(clients.openWindow('{{ site.baseurl }}'));
           });
+              //event.waitUntil(clients.openWindow('{{ site.baseurl }}'));
           {%- endif ~%}
           // Flush cache
           console.log(`[SW] Remove old cache '${key}'`);
