@@ -21,4 +21,4 @@ serviceworker:
   enabled: false
   notification:
     enabled: false
-    message: 'website updated since your last visit.'
+    message: 'Website updated since your last visit.'
