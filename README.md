@@ -6,10 +6,10 @@ The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to imp
 
 - Generated and configurable Web manifest
 - No dependencies, vanilla JavaScript
+- Automatic caching of visited resources
 - Pre-caching of all published pages
 - Pre-caching of a list of assets
-- Automatic caching of visited resources
-- SVG image placeholder
+- Generic offline SVG image
 
 ## Prerequisites
 
@@ -98,7 +98,7 @@ serviceworker:
       path: '/admin'
 ```
 
-Do not pre-cache a specific page:
+Do not pre-cache a specific page (through its front matter):
 
 ```yaml
 ---
