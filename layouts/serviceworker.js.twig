@@ -52,7 +52,7 @@ self.addEventListener('activate', function(event) {
           console.log('[SW] Notification enabled');
           const title = "{{ site.serviceworker.notification.message|default('Website updated.') }}";
           const options = {
-            icon: '{{ site.manifest.icons|first.src }}'
+            icon: '{{ asset(site.manifest.icons|first) }}'
           };
           self.registration.showNotification(title, options);
           self.addEventListener('notificationclick', function (event) {
