@@ -50,7 +50,7 @@ self.addEventListener('activate', function(event) {
           {%- if site.serviceworker.notification.enabled|default(false) ~%}
           // Notification
           console.log('[SW] Notification enabled');
-          const title = "{{ site.serviceworker.notification.message|default('Website updated.') }}";
+          const title = "{{ site.serviceworker.notification.message|default('website updated since your last visit.') }}";
           const options = {
             icon: '{{ asset(site.manifest.icons|first) }}'
           };
