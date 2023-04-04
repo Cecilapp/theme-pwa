@@ -70,7 +70,16 @@ self.addEventListener('activate', function(event) {
             self.addEventListener('notificationclick', function (event) {
               const clickedNotification = event.notification;
               clickedNotification.close();
-              //event.waitUntil(clients.openWindow('{{ site.baseurl }}'));
+              event.waitUntil(
+                clients.matchAll({ type: 'window' }).then((clientsArr) => {
+                  const hadWindowToFocus = clientsArr.some((windowClient) =>
+                    windowClient.url.startsWith('{{ site.baseurl }}') ? (windowClient.focus(), true) : false);
+                  if (!hadWindowToFocus) {
+                    clients.openWindow('{{ site.baseurl }}')
+                      .then((windowClient) => (windowClient ? windowClient.focus() : null));
+                  }
+                })
+              );
             });
           }
           {%- endif ~%}
