@@ -110,16 +110,17 @@ self.addEventListener('fetch', function(event) {
   // Ignore some paths (optional)
   try {
     PATH_TO_IGNORE.forEach(function (path) {
-      if (url.pathname.indexOf(path) > -1) {
-        throw Exception;
+      if (url.pathname.startsWith(path)) {
+        throw new Error('[SW] Path "' + path + '" ignored');
       }
     });
   } catch (e) {
     {%- if site.serviceworker.debug|default(false) or getenv('CECIL_DEBUG')|default(false) ~%}
-    console.log('[SW] ' + e.message);
+    console.log(e.message);
     {%- endif ~%}
     return;
   }
+  // Fetch
   {%- if site.serviceworker.debug|default(false) or getenv('CECIL_DEBUG')|default(false) ~%}
   console.log('[SW] Fetch ', event.request.url);
   {%- endif ~%}
