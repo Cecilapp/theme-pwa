@@ -56,30 +56,12 @@ self.addEventListener('activate', function(event) {
           };
           // Notification granted?
           if (Notification && Notification.permission === 'granted') {
-            notification(title, options);
+            self.registration.showNotification(title, options);
           } else if (Notification && Notification.permission !== 'denied') {
             Notification.requestPermission(function (status) {
               if (status === 'granted') {
-                notification(title, options);
+                self.registration.showNotification(title, options);
               }
-            });
-          }
-          // Notification function
-          function notification(title, options) {
-            self.registration.showNotification(title, options);
-            self.addEventListener('notificationclick', function (event) {
-              const clickedNotification = event.notification;
-              clickedNotification.close();
-              event.waitUntil(
-                clients.matchAll({ type: 'window' }).then((clientsArr) => {
-                  const hadWindowToFocus = clientsArr.some((windowClient) =>
-                    windowClient.url.startsWith('{{ site.baseurl }}') ? (windowClient.focus(), true) : false);
-                  if (!hadWindowToFocus) {
-                    clients.openWindow('{{ site.baseurl }}')
-                      .then((windowClient) => (windowClient ? windowClient.focus() : null));
-                  }
-                })
-              );
             });
           }
           {%- endif ~%}
@@ -156,6 +138,22 @@ self.addEventListener('fetch', function(event) {
           return new Response('<svg role="img" aria-labelledby="offline-title" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"><title id="offline-title">{{ 'Offline'|trans }}</title><g fill="none" fill-rule="evenodd"><path fill="#D8D8D8" d="M0 0h400v300H0z"/><text fill="#505050" font-family="Helvetica Neue,Arial,Helvetica,sans-serif" font-size="72" font-style="italic"><tspan x="{{ 400 // 'Offline'|trans|length }}" y="172">{{ 'Offline'|trans }}</tspan></text></g></svg>', { headers: { 'Content-Type': 'image/svg+xml' } });
         }
       });
+    })
+  );
+});
+
+// Notification click
+self.addEventListener('notificationclick', function (event) {
+  const clickedNotification = event.notification;
+  clickedNotification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((clientsArr) => {
+      const hadWindowToFocus = clientsArr.some((windowClient) =>
+        windowClient.url.startsWith('{{ site.baseurl }}') ? (windowClient.focus(), true) : false);
+      if (!hadWindowToFocus) {
+        clients.openWindow('{{ site.baseurl }}')
+          .then((windowClient) => (windowClient ? windowClient.focus() : null));
+      }
     })
   );
 });
