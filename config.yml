@@ -2,7 +2,6 @@ defaultpages:
   manifest:
     path: manifest
     output: webmanifest
-    #multilingual: false
   serviceworker:
     path: serviceworker
     layout: serviceworker
