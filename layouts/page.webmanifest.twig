@@ -25,7 +25,8 @@
   ]
   {%- if site.serviceworker.enabled|default(false) %},
   "serviceworker": {
-    "src": "{{ site.serviceworker.file|default('serviceworker.js') }}",
+    "src": "/serviceworker.js",
+    {#-"src": "{{ url(site.page('serviceworker', site.language), {canonical: false}) }}",~#}
     "scope": "/",
     "use_cache": false
   }
