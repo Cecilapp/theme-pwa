@@ -26,7 +26,7 @@
   "display": "{{ site.manifest.display|default('standalone') }}",
   "start_url": "{{ site.manifest.start_url|default(url('/', {canonical: true})) }}",
   "id": "{{ site.manifest.id|default(url('/', {canonical: true})) }}",
-  "orientation": "{{ site.manifest.orientation|default('portrait') }}",
+  "orientation": "{{ site.manifest.orientation|default('any') }}",
   "background_color": "{{ site.manifest.background_color|default('#FFFFFF') }}",
   "theme_color": "{{ site.manifest.theme_color|default('#202020') }}",
   "lang": "{{ site.language|default('en') }}",
