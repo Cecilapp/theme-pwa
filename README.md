@@ -62,7 +62,7 @@ manifest:
   shortcuts: true
 ```
 
-Add [installer screenshots](https://web.dev/patterns/web-apps/richer-install-ui):
+Add [installer screenshots](https://developer.mozilla.org/docs/Web/Manifest/screenshots):
 
 ```yaml
 manifest:
