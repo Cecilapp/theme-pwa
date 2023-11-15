@@ -8,6 +8,17 @@
   }{% if loop.length > 1 and not loop.last %},{% endif %}
   {%- endfor %}
 {% endset -%}
+{%- set screenshots %}
+  {%- for screenshot in site.manifest.screenshots|default({}) -%}
+    {%- set screenshot_asset = asset(screenshot) -%}
+  {
+    "src": "{{ screenshot_asset|url }}",
+    "sizes": "{{ screenshot_asset.width }}x{{ screenshot_asset.height }}",
+    "type": "{{ screenshot_asset.subtype }}",
+    "form_factor": "{% if screenshot_asset.width < screenshot_asset.height %}narrow{% else %}wide{% endif %}"
+  }{% if loop.length > 1 and not loop.last %},{% endif %}
+  {%- endfor %}
+{% endset -%}
 {
   "name": "{{ site.title }}",
   "short_name": "{{ site.title }}",
@@ -21,7 +32,10 @@
   "lang": "{{ site.language|default('en') }}",
   "dir": "{{ site.manifest.dir|default('ltr') }}",
   "icons": [
-    {{-  icons -}}
+    {{- icons -}}
+  ],
+  "screenshots": [
+    {{- screenshots -}}
   ]
   {%- if site.serviceworker.enabled|default(false) %},
   "serviceworker": {

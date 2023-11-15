@@ -62,6 +62,15 @@ manifest:
   shortcuts: true
 ```
 
+Add [installer screenshots](https://web.dev/patterns/web-apps/richer-install-ui):
+
+```yaml
+manifest:
+  screenshots:
+    - screenshots/screenshot-desktop.png
+    - screenshots/screenshot-mobile.png
+```
+
 ### Service worker
 
 [Register the service worker](https://developers.google.com/web/fundamentals/primers/service-workers/registration#common_registration_boilerplate) before the end of the HTML `</body>` of the main template:
