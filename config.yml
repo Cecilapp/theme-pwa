@@ -1,16 +1,14 @@
-pages:
-  default:
-    manifest:
-      path: manifest
-      output: webmanifest
-      #multilingual: false
+defaultpages:
+  manifest:
+    path: manifest
+    output: webmanifest
+  serviceworker:
+    path: serviceworker
+    layout: serviceworker
+    output: js
+    multilingual: false
     serviceworker:
-      path: serviceworker
-      layout: serviceworker
-      output: js
-      multilingual: false
-      serviceworker:
-        precache: false
+      precache: false
 manifest:
   background_color: '#FFFFFF'
   theme_color: '#202020'
