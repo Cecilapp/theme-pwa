@@ -39,7 +39,7 @@
   ]
   {%- if site.serviceworker.enabled|default(false) %},
   "serviceworker": {
-    "src": "{{ url(site.page('serviceworker'), {canonical: false}) }}",
+    "src": "{{ url(site.page('serviceworker'), {canonical: true}) }}",
     "scope": "/",
     "use_cache": false
   }
