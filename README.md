@@ -57,6 +57,9 @@ manifest:
       purpose: maskable
 ```
 
+> [!TIP]
+> Create your own [maskable icons](https://web.dev/articles/maskable-icon) with [Maskable.app](https://maskable.app/editor).
+
 #### Web manifest Optional
 
 Add [shortcuts](https://developer.mozilla.org/docs/Web/Manifest/shortcuts):
