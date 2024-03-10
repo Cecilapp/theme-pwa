@@ -10,6 +10,11 @@ pages:
       multilingual: false
       serviceworker:
         precache: false
+    offline:
+      path: offline
+      layout: offline
+      output: html
+      uglyurl: true
 manifest:
   background_color: '#FFFFFF'
   theme_color: '#202020'

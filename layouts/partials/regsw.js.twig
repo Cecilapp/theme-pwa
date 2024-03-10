@@ -44,5 +44,8 @@
         },
         function (e) { console.log('Error', e); }
       );
+      window.addEventListener('offline', function(){
+        console.log('Oh no, you lost your network connection.');
+      });
       {%- endif ~%}
     {% endapply %}</script>

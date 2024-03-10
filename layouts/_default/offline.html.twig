@@ -1,0 +1,52 @@
+{#- source: https://web.dev/articles/offline-fallback-page?hl=fr -#}
+<!DOCTYPE html>
+<html lang="{{ site.language }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% trans %}You are offline{% endtrans %}</title>
+    <style>
+      body {
+        font-family: helvetica, arial, sans-serif;
+        margin: 2em;
+      }
+      h1 {
+        font-style: italic;
+        color: #373fff;
+      }
+      p {
+        margin-block: 1rem;
+      }
+      button {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>{% trans %}You are offline{% endtrans %}</h1>
+    <p>{% trans %}Click the button below to try reloading.{% endtrans %}</p>
+    <button type="button">⤾ {% trans %}Reload{% endtrans %}</button>
+    <script>
+      document.querySelector('button').addEventListener('click', () => {
+        window.location.reload();
+      });
+      window.addEventListener('online', () => {
+        window.location.reload();
+      });
+      async function checkNetworkAndReload() {
+        try {
+          const response = await fetch('.');
+          if (response.status >= 200 && response.status < 500) {
+            window.location.reload();
+            return;
+          }
+        } catch {
+          console.log('Unable to connect to the server');
+        }
+        window.setTimeout(checkNetworkAndReload, 2500);
+      }
+      checkNetworkAndReload();
+    </script>
+  </body>
+</html>
