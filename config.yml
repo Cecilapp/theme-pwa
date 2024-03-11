@@ -28,6 +28,10 @@ manifest:
   shortcuts: false
 serviceworker:
   enabled: false
+  cache:
+    request: reload # 'reload' or 'default'
+  offline:
+    page: offline # offline page ID
   notification:
     enabled: false
     message: 'Website updated since your last visit.'

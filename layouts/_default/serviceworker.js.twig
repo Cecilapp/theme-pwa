@@ -1,4 +1,4 @@
-var CACHE_VERSION = "{{ 'now'|date('U') }}";
+var CACHE_VERSION = "{{ site.time }}";
 var CACHE_NAME = '{{ site.title|slugify }}';
 var CACHE = CACHE_NAME + '-v' + CACHE_VERSION;
 var PATH_TO_IGNORE = [];
@@ -31,7 +31,7 @@ self.addEventListener('install', function(event) {
         {%- if site.debug|default(false) ~%}
         console.log('[SW] Precache', path);
         {%- endif ~%}
-        cache.add(new Request(path, {cache: 'reload'})).catch(error => console.error(`[SW] Can't add "${path}" to cache`));
+        cache.add(new Request(path, {cache: '{{ site.serviceworker.cache.request|default('reload') }}'})).catch(error => console.error(`[SW] Can't add "${path}" to cache`));
       });
     })
   );
@@ -135,14 +135,14 @@ self.addEventListener('fetch', function(event) {
           {%- if site.debug|default(false) ~%}
           console.log('[SW] Put to cache', event.request.url);
           {%- endif ~%}
-          cache.put(new Request(event.request, { cache: 'reload' }), responseToCache);
+          cache.put(new Request(event.request, { cache: '{{ site.serviceworker.cache.request|default('reload') }}' }), responseToCache);
         });
         return response;
       })
       .catch(function(response) {
         // offline page
         if (event.request.mode === 'navigate' || (event.request.method === 'GET' && event.request.headers.get('Accept').includes('text/html'))) {
-          return caches.match('{{ url('offline', {canonical: false}) }}');
+          return caches.match('{{ url(site.serviceworker.offline.page|default('offline'), {canonical: false}) }}');
         }
         // offline image
         if (event.request.destination === 'image') {
@@ -153,6 +153,8 @@ self.addEventListener('fetch', function(event) {
     })
   );
 });
+
+{%- if site.serviceworker.notification.enabled|default(false) ~%}
 
 // notification click
 self.addEventListener('notificationclick', function (event) {
@@ -169,3 +171,4 @@ self.addEventListener('notificationclick', function (event) {
     })
   );
 });
+{%- endif ~%}
