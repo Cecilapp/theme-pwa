@@ -1,20 +1,21 @@
 # PWA component theme
 
-The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to implement a [service worker](https://developers.google.com/web/fundamentals/getting-started/primers/service-workers#what_is_a_service_worker) to turn a website into a [Progressive Web App](https://developers.google.com/web/progressive-web-apps/).
+The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to implement a [Web manifest](https://developer.mozilla.org/docs/Web/Manifest) and a [service worker](https://developer.mozilla.org/docs/Web/API/Service_Worker_API) to turn a website into a [Progressive Web App](https://web.dev/explore/progressive-web-apps).
 
 ## Features
 
 - Generated and configurable Web manifest
-- No dependencies, vanilla JavaScript
+- Generated and configurable service worker
 - Automatic caching of visited resources
-- Pre-caching of all published pages
-- Pre-caching of a list of assets
-- Generic offline SVG image
+- No dependencies, vanilla JavaScript
+- Precaching of published pages
+- Precaching of a list of assets
+- Generic offline page and default image (SVG)
 
 ## Prerequisites
 
 - A [Cecil](https://cecil.app) website
-- A [supported browser](https://developer.mozilla.org/docs/Web/API/Service_Worker_API/Using_Service_Workers#Compatibilit%C3%A9_des_navigateurs)
+- A [supported browser](https://caniuse.com/serviceworkers)
 - HTTPS
 
 ## Installation
@@ -36,7 +37,7 @@ theme:
 
 ### Web manifest
 
-Add the [web manifest](https://developer.mozilla.org/fr/docs/Web/Manifest) in the HTML `<header>` of the main template:
+Add the [web manifest](https://developer.mozilla.org/docs/Web/Manifest) in the HTML `<header>` of the main template:
 
 ```twig
 <link rel="manifest" href="{{ url('manifest') }}">
@@ -80,10 +81,10 @@ manifest:
 
 ### Service worker
 
-[Register the service worker](https://developers.google.com/web/fundamentals/primers/service-workers/registration#common_registration_boilerplate) before the end of the HTML `</body>` of the main template:
+**Register** the service worker before the end of the HTML `</body>` of the main template:
 
 ```twig
-{% include 'partials/regsw.js.twig' with {'site': site} only %}
+{{ include('partials/regsw.js.twig', {site: site}, with_context = false) }}
 ```
 
 Enable the service worker:
@@ -95,7 +96,7 @@ serviceworker:
 
 #### Service worker Optional
 
-Define pre-cached files:
+Define precached files:
 
 ```yaml
 serviceworker:
@@ -114,7 +115,7 @@ serviceworker:
       path: '/admin'
 ```
 
-Do not pre-cache a specific page (through its front matter):
+Do not precache a specific page (through its front matter):
 
 ```yaml
 ---
