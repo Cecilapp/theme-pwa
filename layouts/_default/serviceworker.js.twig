@@ -6,26 +6,20 @@ var PATH_TO_IGNORE = [];
 var PATH_TO_IGNORE = [{{ site.serviceworker.ignore|map(i => "'#{i.path}'") | join(', ')}}];
 {% endif %}
 
-// Pages to cache
-var urlsToCache = [];
+var precache = [];
+// pages precache
 {% for page in site.allpages|filter(p => p.published == true and p.redirect is not defined and p.serviceworker.precache ?? true != false)|sort((a, b) => a.path > b.path) %}
-urlsToCache.push('{{ url(page) }}');
-  {%- if site.debug|default(false) ~%}
-console.log('[SW] Page to cache "{{ url(page) }}"');
-  {%- endif ~%}
+precache.push('{{ url(page, {canonical: false}) }}');
 {% endfor %}
-// Files to cache
 {%- block precache %}{% endblock -%}
 {% if site.serviceworker.precache is defined %}
+// assets precache
   {%- for file in site.serviceworker.precache ~%}
-urlsToCache.push('{{ asset(file)|url }}');
-    {%- if site.debug|default(false) ~%}
-console.log('[SW] File to cache "{{ asset(file)|url}}"');
-    {%- endif ~%}
+precache.push('{{ asset(file)|url({canonical: false}) }}');
   {%- endfor ~%}
 {% endif %}
 
-// Pre-cache pages/files
+// install and precache
 self.addEventListener('install', function(event) {
   self.skipWaiting(); // install the new SW immediately
   {%- if site.debug|default(false) ~%}
@@ -33,17 +27,17 @@ self.addEventListener('install', function(event) {
   {%- endif ~%}
   event.waitUntil(
     caches.open(CACHE).then(function(cache) {
-      {%- if site.debug|default(false) ~%}
-      console.log('[SW] Pre-cache pages/files');
-      {%- endif ~%}
-      urlsToCache.forEach(function (url) {
-        cache.add(new Request(url, {cache: 'reload'})).catch(error => console.error(`[SW] Can't add "${url}" to cache`));
+      precache.forEach(function (path) {
+        {%- if site.debug|default(false) ~%}
+        console.log('[SW] Precache', path);
+        {%- endif ~%}
+        cache.add(new Request(path, {cache: 'reload'})).catch(error => console.error(`[SW] Can't add "${path}" to cache`));
       });
     })
   );
 });
 
-// Remove old cache
+// activate and remove old cache
 self.addEventListener('activate', function(event) {
   {%- if site.debug|default(false) ~%}
   console.log('[SW] Activate');
@@ -51,10 +45,10 @@ self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(keyList) {
       return Promise.all(keyList.map(function(key) {
-        // New version?
+        // new version?
         if (key !== CACHE) {
           {%- if site.serviceworker.notification.enabled|default(false) ~%}
-          // Notification
+          // notification
           {%- if site.debug|default(false) ~%}
           console.log('[SW] Notification enabled');
           {%- endif ~%}
@@ -62,7 +56,7 @@ self.addEventListener('activate', function(event) {
           const options = {
             icon: '{{ asset(site.manifest.icons|first) }}'
           };
-          // Notification granted?
+          // notification granted?
           if (Notification && Notification.permission === 'granted') {
             self.registration.showNotification(title, options);
           } else if (Notification && Notification.permission !== 'denied') {
@@ -73,9 +67,9 @@ self.addEventListener('activate', function(event) {
             });
           }
           {%- endif ~%}
-          // Flush cache
+          // flush cache
           {%- if site.debug|default(false) ~%}
-          console.log(`[SW] Remove old cache '${key}'`);
+          console.log(`[SW] Remove old cache "${key}"`);
           {%- endif ~%}
           return caches.delete(key);
         }
@@ -84,26 +78,27 @@ self.addEventListener('activate', function(event) {
   );
 });
 
-// Fetch data
+// fetch
 self.addEventListener('fetch', function(event) {
   url = new URL(event.request.url);
-  // Ignore non-GET requests
+  // ignores...
+  // ...not GET requests
   if (event.request.method !== 'GET') {
     return;
   }
-  // Ignore non-local resources (except images)
-  if (!(url.origin == location.origin) && event.request.headers.get('Accept').indexOf('image') === -1) {
+  // ...not local resources, except images
+  if (!(url.origin == location.origin) && event.request.destination !== 'image') {
     return;
   }
-  // Ignore Cecil's watcher
+  // ...Cecil's watcher
   if (url.pathname == '/watcher') {
     return;
   }
-  // Ignore some paths (optional)
+  // ...optional paths
   try {
     PATH_TO_IGNORE.forEach(function (path) {
       if (url.pathname.startsWith(path)) {
-        throw new Error('[SW] Path "' + path + '" ignored');
+        throw new Error('[SW] Ignore', path);
       }
     });
   } catch (e) {
@@ -112,51 +107,54 @@ self.addEventListener('fetch', function(event) {
     {%- endif ~%}
     return;
   }
-  // Fetch
   {%- if site.debug|default(false) ~%}
-  console.log('[SW] Fetch ', event.request.url);
+  console.log('[SW] Fetch', event.request.url);
   {%- endif ~%}
   event.respondWith(
+    // cache before
     caches.match(event.request).then(function(response) {
-      // Return response from cache if exists
       if (response) {
+        {%- if site.debug|default(false) ~%}
+        console.log('[SW] Response from cache', event.request.url);
+        {%- endif ~%}
         return response;
       }
-      // Store visited ressource to cache
+      // put visited ressource to cache
       var fetchRequest = event.request.clone();
       return fetch(fetchRequest).then(function(response) {
-        // Ignore non-valid response
+        // ignore not valid response
         if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
         var responseToCache = response.clone();
         caches.open(CACHE).then(function(cache) {
-          // Ignore non-HTTP protocols ("data:", "chrome-extension:, etc.)
+          // ignore not HTTP (ie "data:", "chrome-extension:", etc.)
           if (!event.request.url.startsWith('http')) {
             return;
           }
           {%- if site.debug|default(false) ~%}
-          console.log('[SW] Store ', event.request.url);
+          console.log('[SW] Put to cache', event.request.url);
           {%- endif ~%}
           cache.put(new Request(event.request, { cache: 'reload' }), responseToCache);
         });
         return response;
       })
       .catch(function(response) {
-        // Offline page
+        // offline page
         if (event.request.mode === 'navigate' || (event.request.method === 'GET' && event.request.headers.get('Accept').includes('text/html'))) {
           return caches.match('{{ url('offline', {canonical: false}) }}');
         }
-        // Offline image
-        if (event.request.headers.get('Accept').indexOf('image') !== -1) {
+        // offline image
+        if (event.request.destination === 'image') {
           return new Response('<svg role="img" aria-labelledby="offline-title" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"><title id="offline-title">{{ 'Offline'|trans }}</title><g fill="none" fill-rule="evenodd"><path fill="#D8D8D8" d="M0 0h400v300H0z"/><text fill="#505050" font-family="Helvetica Neue,Arial,Helvetica,sans-serif" font-size="72" font-style="italic"><tspan x="{{ 400 // 'Offline'|trans|length }}" y="172">{{ 'Offline'|trans }}</tspan></text></g></svg>', { headers: { 'Content-Type': 'image/svg+xml' } });
         }
+        return Response.error();
       });
     })
   );
 });
 
-// Notification click
+// notification click
 self.addEventListener('notificationclick', function (event) {
   const clickedNotification = event.notification;
   clickedNotification.close();

@@ -1,7 +1,8 @@
-    {#- register serviceWorker ~#}
+    {#- service worker registration ~#}
     <script>{% apply minify_js ~%}
       if ('serviceWorker' in navigator) {
         {%- if site.serviceworker.notification.enabled|default(false) ~%}
+        // checks notification permission
         Notification.requestPermission(permission => {
           if (!('permission' in Notification)) {
             Notification.permission = permission;
@@ -10,23 +11,18 @@
         })
         {%- endif ~%}
         {%- if site.serviceworker is defined and site.serviceworker.enabled ~%}
+        // register service worker
         navigator.serviceWorker.register('{{ url(site.page("serviceworker"), {canonical: true}) }}', { scope: '/' }).then(function (registration) {
           {%- if site.debug|default(false) ~%}
-          console.log('[SW] Registration successful with scope: ', registration.scope);
+          console.log('[SW] Registration successful with scope', registration.scope);
           {%- endif ~%}
         }).catch(function (err) {
           console.log('[SW]', err);
         });
         {%- endif ~%}
         {%- if site.serviceworker is defined and not site.serviceworker.enabled ~%}
-        caches.keys().then(function(keyList) {
-          Promise.all(keyList.map(function(key) {
-            {%- if site.debug|default(false) ~%}
-            console.log('[SW] Delete cache');
-            {%- endif ~%}
-            caches.delete(key);
-          }));
-        });
+        // if service worker is disabled:
+        // 1. unregister
         navigator.serviceWorker.getRegistrations().then(registrations => {
           registrations.forEach(registration => {
             {%- if site.debug|default(false) ~%}
@@ -35,15 +31,28 @@
             registration.unregister()
           })
         })
+        // 2. remove cache
+        caches.keys().then(function(keyList) {
+          Promise.all(keyList.map(function(key) {
+            {%- if site.debug|default(false) ~%}
+            console.log('[SW] Remove cache');
+            {%- endif ~%}
+            caches.delete(key);
+          }));
+        });
         {%- endif ~%}
       }
       {%- if site.serviceworker is defined and site.debug|default(false) ~%}
-      navigator.webkitTemporaryStorage.queryUsageAndQuota(
-        function (usedBytes, grantedBytes) {
-          console.log('Cache size: ', (usedBytes / 1048576).toFixed(2), ' / ', (grantedBytes / 1048576).toFixed(2), 'Mo');
-        },
-        function (e) { console.log('Error', e); }
-      );
+      // cache storage usage
+      if ('webkitTemporaryStorage' in navigator && 'queryUsageAndQuota' in navigator.webkitTemporaryStorage) {
+        navigator.webkitTemporaryStorage.queryUsageAndQuota(
+          function (usedBytes, grantedBytes) {
+            console.log('[SW] Cache size:', (usedBytes / 1048576).toFixed(2), '/', (grantedBytes / 1048576).toFixed(0), 'Mo');
+          },
+          function (e) { console.log('Error', e); }
+        );
+      };
+      // offline?
       window.addEventListener('offline', function(){
         console.log('Oh no, you lost your network connection.');
       });
