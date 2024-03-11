@@ -142,7 +142,15 @@ self.addEventListener('fetch', function(event) {
       .catch(function(response) {
         // offline page
         if (event.request.mode === 'navigate' || (event.request.method === 'GET' && event.request.headers.get('Accept').includes('text/html'))) {
-          return caches.match('{{ url(site.serviceworker.offline.page|default('offline'), {canonical: false}) }}');
+          var langPrefix = '';
+          var languages = [{{ site.languages|column('code')|map(l => "'#{l}'")|join(', ') }}];
+          if (languages.length > 1) {
+            var pathPrefix = url.pathname.split('/')[1]; // 'fr'?
+            if (languages.includes(pathPrefix)) {
+              var langPrefix = '/' + pathPrefix;
+            }
+          }
+          return caches.match(langPrefix + '{{ url(site.serviceworker.offline.page|default('offline'), {canonical: false}) }}');
         }
         // offline image
         if (event.request.destination === 'image') {
