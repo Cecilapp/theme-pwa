@@ -21,7 +21,7 @@
         });
         {%- endif ~%}
         {%- if site.serviceworker is defined and not site.serviceworker.enabled ~%}
-        // if service worker is disabled:
+        // Service worker is disabled:
         // 1. unregister
         navigator.serviceWorker.getRegistrations().then(registrations => {
           registrations.forEach(registration => {
@@ -47,14 +47,15 @@
       if ('webkitTemporaryStorage' in navigator && 'queryUsageAndQuota' in navigator.webkitTemporaryStorage) {
         navigator.webkitTemporaryStorage.queryUsageAndQuota(
           function (usedBytes, grantedBytes) {
-            console.log('[SW] Cache size:', (usedBytes / 1048576).toFixed(2), '/', (grantedBytes / 1048576).toFixed(0), 'Mo');
+            console.log('Storage usage:', (usedBytes / 1048576).toFixed(2), '/', (grantedBytes / 1048576).toFixed(0), 'Mo');
           },
-          function (e) { console.log('Error', e); }
+          function (error) { console.log('Error', error); }
         );
       };
       // offline?
-      window.addEventListener('offline', function(){
-        console.log('Oh no, you lost your network connection.');
+      window.addEventListener('offline', () => {
+        console.log('Network connection lost.');
+      });
       });
       {%- endif ~%}
     {% endapply %}</script>
