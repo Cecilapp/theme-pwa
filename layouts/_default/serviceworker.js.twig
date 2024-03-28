@@ -14,9 +14,9 @@ var precache = [];
 precache.push('{{ url(page, {canonical: false}) }}');
 {% endfor %}
 {%- block precache %}{% endblock -%}
-{% if site.serviceworker.precache is defined %}
-// assets precache
-  {%- for file in site.serviceworker.precache ~%}
+{% if site.serviceworker.install.precache.assets is defined %}
+// assets
+  {%- for file in site.serviceworker.install.precache.assets ~%}
 precache.push('{{ asset(file)|url({canonical: false}) }}');
   {%- endfor ~%}
 {% endif %}

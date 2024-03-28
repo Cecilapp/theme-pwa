@@ -33,6 +33,8 @@ serviceworker:
     precache:
       pages:
         limit: false
+      #assets:
+      #  - images/example.png
   cache:
     request: reload # 'reload' or 'default'
   offline:
