@@ -28,6 +28,11 @@ manifest:
   shortcuts: false
 serviceworker:
   enabled: false
+  install:
+    prompt: true
+    precache:
+      pages:
+        limit: false
   cache:
     request: reload # 'reload' or 'default'
   offline:
