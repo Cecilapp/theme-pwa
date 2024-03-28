@@ -12,13 +12,36 @@
         {%- endif ~%}
         {%- if site.serviceworker is defined and site.serviceworker.enabled ~%}
         // register service worker
-        navigator.serviceWorker.register('{{ url(site.page('serviceworker'), {canonical: true}) }}', { scope: '/' }).then(function (registration) {
-          {%- if site.debug|default(false) ~%}
-          console.log('[SW] Registration successful with scope', registration.scope);
-          {%- endif ~%}
-        }).catch(function (err) {
-          console.log('[SW]', err);
-        });
+        navigator.serviceWorker
+          .register('{{ url(site.page('serviceworker'), {canonical: true}) }}', { scope: '/' })
+          .then(function (registration) {
+            {%- if site.debug|default(false) ~%}
+            console.log('[SW] Registration successful with scope', registration.scope);
+            {%- endif ~%}
+            registration.update(); // checks if site have been updated
+            registration.addEventListener('updatefound', () => {
+              const installingSW = registration.installing;
+              {%- if site.debug|default(false) ~%}
+              console.log('[SW] A new version is being installed:', installingSW.state);
+              {%- endif ~%}
+              installingSW.onstatechange = () => {
+                if (installingSW.state === 'installed') {
+                  if (navigator.serviceWorker.controller) {
+                    {%- if site.debug|default(false) ~%}
+                    console.log('[SW] New version is available. Reload to activate it.');
+                    {%- endif ~%}
+                    navigator.setAppBadge();
+                    setTimeout(() => {
+                      navigator.clearAppBadge();
+                    }, 3000);
+                  }
+                }
+              }
+            });
+          })
+          .catch(function (error) {
+            console.log('[SW]', error);
+          });
         {%- endif ~%}
         {%- if site.serviceworker is defined and not site.serviceworker.enabled ~%}
         // Service worker is disabled:
