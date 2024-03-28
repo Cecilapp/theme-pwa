@@ -79,6 +79,11 @@
       window.addEventListener('offline', () => {
         console.log('Network connection lost.');
       });
+      {%- endif ~%}
+      {%- if not site.serviceworker.install.prompt ?? false ~%}
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // prevents the default install dialog from appearing on mobile
+        e.preventDefault();
       });
       {%- endif ~%}
     {% endapply %}</script>
