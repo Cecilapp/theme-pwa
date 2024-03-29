@@ -36,9 +36,13 @@ serviceworker:
       #assets:
       #  - images/example.png
   update:
+    snackbar:
+      enabled: false # show Snackbar message
     notification:
       enabled: false # show notification
   cache:
     request: reload # 'reload' or 'default'
   offline:
     page: offline # offline page ID
+    snackbar:
+      enabled: false # show Snackbar message
