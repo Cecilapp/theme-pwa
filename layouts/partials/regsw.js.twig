@@ -29,7 +29,7 @@
                 if (installingSW.state === 'installed') {
                   if (navigator.serviceWorker.controller) {
                     {%- if site.debug|default(false) ~%}
-                    console.log('[SW] New version is available. Reload to activate it.');
+                    console.log('[SW] New version is available.');
                     {%- endif ~%}
                     {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
                     // badge
@@ -37,6 +37,7 @@
                     setTimeout(() => {
                       navigator.clearAppBadge();
                     }, 3000);
+                    {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
                     // notification
                     {%- if site.debug|default(false) ~%}
                     console.log('[SW] Notification enabled');
@@ -44,9 +45,9 @@
                     Notification.requestPermission().then((result) => {
                       if (result === "granted") {
                         navigator.serviceWorker.ready.then((registration) => {
-                          const title = "{{ site.serviceworker.update.notification.title|default('Update of %title%')|trans({'%title%': site.title}) }}";
+                          const title = "{{ 'Update of %title%'|trans({'%title%': site.title}) }}";
                           const options = {
-                            body: "{{ site.serviceworker.update.notification.body|default('Website updated since your last visit.')|trans }}",
+                            body: "{{ 'Website updated since your last visit.'|trans }}",
                             icon: '{{ asset(site.manifest.icons|first) }}',
                             vibrate: [200, 100, 100, 100]
                           };

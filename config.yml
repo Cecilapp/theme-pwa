@@ -29,17 +29,15 @@ manifest:
 serviceworker:
   enabled: false
   install:
-    prompt: true
+    prompt: true # show install prompt
     precache:
       pages:
-        limit: false
+        limit: false # number or false
       #assets:
       #  - images/example.png
   update:
     notification:
-      enabled: false
-      title: 'Update of %title%'
-      body: 'Website updated since your last visit.'
+      enabled: false # show notification
   cache:
     request: reload # 'reload' or 'default'
   offline:
