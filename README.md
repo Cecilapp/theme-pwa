@@ -120,6 +120,14 @@ serviceworker:
         limit: 10
 ```
 
+Disable install prompt:
+
+```yaml
+serviceworker:
+  install:
+    prompt: false
+```
+
 Define ignored paths:
 
 ```yaml
@@ -127,14 +135,6 @@ serviceworker:
   ignore:
     - name: 'cms'
       path: '/admin'
-```
-
-Disable install prompt:
-
-```yaml
-serviceworker:
-  install:
-    prompt: false
 ```
 
 Do not precache a specific page (through its front matter):

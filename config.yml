@@ -35,10 +35,12 @@ serviceworker:
         limit: false
       #assets:
       #  - images/example.png
+  update:
+    notification:
+      enabled: false
+      title: 'Update of %title%'
+      body: 'Website updated since your last visit.'
   cache:
     request: reload # 'reload' or 'default'
   offline:
     page: offline # offline page ID
-  notification:
-    enabled: false
-    message: 'Website updated since your last visit.'

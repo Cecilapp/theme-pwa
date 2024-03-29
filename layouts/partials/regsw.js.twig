@@ -1,7 +1,7 @@
     {#- service worker registration ~#}
     <script>{% apply minify_js ~%}
       if ('serviceWorker' in navigator) {
-        {%- if site.serviceworker.notification.enabled|default(false) ~%}
+        {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
         // checks notification permission
         Notification.requestPermission(permission => {
           if (!('permission' in Notification)) {
@@ -31,7 +31,7 @@
                     {%- if site.debug|default(false) ~%}
                     console.log('[SW] New version is available. Reload to activate it.');
                     {%- endif ~%}
-                    {%- if site.serviceworker.notification.enabled|default(false) ~%}
+                    {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
                     // badge
                     navigator.setAppBadge();
                     setTimeout(() => {
@@ -44,9 +44,9 @@
                     Notification.requestPermission().then((result) => {
                       if (result === "granted") {
                         navigator.serviceWorker.ready.then((registration) => {
-                          const title = '{{ "Update of %title%"|trans({"%title%": site.title}) }}';
+                          const title = "{{ site.serviceworker.update.notification.title|default('Update of %title%')|trans({'%title%': site.title}) }}";
                           const options = {
-                            body: "{{ site.serviceworker.notification.message|default('Website updated since your last visit.')|trans }}",
+                            body: "{{ site.serviceworker.update.notification.body|default('Website updated since your last visit.')|trans }}",
                             icon: '{{ asset(site.manifest.icons|first) }}',
                             vibrate: [200, 100, 100, 100]
                           };
