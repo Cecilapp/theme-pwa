@@ -96,14 +96,28 @@ serviceworker:
 
 #### Service worker Optional
 
-Define precached files:
+Define precached assets:
 
 ```yaml
 serviceworker:
-  precache:
-    - icon-192x192.png
-    - icon-512x512.png
-    - styles.css
+  install:
+    precache:
+      assets:
+        - logo.png
+        - icon-192x192.png
+        - icon-512x512.png
+        - icon-192x192-maskable.png
+        - icon-512x512-maskable.png
+```
+
+Limit number of precached pages:
+
+```yaml
+serviceworker:
+  install:
+    precache:
+      pages:
+        limit: 10
 ```
 
 Define ignored paths:
@@ -113,6 +127,14 @@ serviceworker:
   ignore:
     - name: 'cms'
       path: '/admin'
+```
+
+Disable install prompt:
+
+```yaml
+serviceworker:
+  install:
+    prompt: false
 ```
 
 Do not precache a specific page (through its front matter):
