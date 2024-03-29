@@ -49,26 +49,6 @@ self.addEventListener('activate', function(event) {
       return Promise.all(keyList.map(function(key) {
         // new version?
         if (key !== CACHE) {
-          {%- if site.serviceworker.notification.enabled|default(false) ~%}
-          // notification
-          {%- if site.debug|default(false) ~%}
-          console.log('[SW] Notification enabled');
-          {%- endif ~%}
-          const title = "{{ site.serviceworker.notification.message|default('Website updated since your last visit.')|trans }}";
-          const options = {
-            icon: '{{ asset(site.manifest.icons|first) }}'
-          };
-          // notification granted?
-          if (Notification && Notification.permission === 'granted') {
-            self.registration.showNotification(title, options);
-          } else if (Notification && Notification.permission !== 'denied') {
-            Notification.requestPermission(function (status) {
-              if (status === 'granted') {
-                self.registration.showNotification(title, options);
-              }
-            });
-          }
-          {%- endif ~%}
           // flush cache
           {%- if site.debug|default(false) ~%}
           console.log(`[SW] Remove old cache "${key}"`);
@@ -165,18 +145,14 @@ self.addEventListener('fetch', function(event) {
 });
 
 {%- if site.serviceworker.notification.enabled|default(false) ~%}
-
 // notification click
-self.addEventListener('notificationclick', function (event) {
-  const clickedNotification = event.notification;
-  clickedNotification.close();
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((clientsArr) => {
-      const hadWindowToFocus = clientsArr.some((windowClient) =>
-        windowClient.url.startsWith('{{ site.baseurl }}') ? (windowClient.focus(), true) : false);
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      const hadWindowToFocus = clientList.some((windowClient) => windowClient.url.startsWith('{{ site.baseurl }}') ? (windowClient.focus(), true) : false);
       if (!hadWindowToFocus) {
-        clients.openWindow('{{ site.baseurl }}')
-          .then((windowClient) => (windowClient ? windowClient.focus() : null));
+        clients.openWindow('{{ site.baseurl }}').then((windowClient) => (windowClient ? windowClient.focus() : null));
       }
     })
   );

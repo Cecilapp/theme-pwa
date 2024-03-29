@@ -31,10 +31,30 @@
                     {%- if site.debug|default(false) ~%}
                     console.log('[SW] New version is available. Reload to activate it.');
                     {%- endif ~%}
+                    {%- if site.serviceworker.notification.enabled|default(false) ~%}
+                    // badge
                     navigator.setAppBadge();
                     setTimeout(() => {
                       navigator.clearAppBadge();
                     }, 3000);
+                    // notification
+                    {%- if site.debug|default(false) ~%}
+                    console.log('[SW] Notification enabled');
+                    {%- endif ~%}
+                    Notification.requestPermission().then((result) => {
+                      if (result === "granted") {
+                        navigator.serviceWorker.ready.then((registration) => {
+                          const title = '{{ "Update of %title%"|trans({"%title%": site.title}) }}';
+                          const options = {
+                            body: "{{ site.serviceworker.notification.message|default('Website updated since your last visit.')|trans }}",
+                            icon: '{{ asset(site.manifest.icons|first) }}',
+                            vibrate: [200, 100, 100, 100]
+                          };
+                          registration.showNotification(title, options);
+                        });
+                      }
+                    });
+                    {%- endif ~%}
                   }
                 }
               }
