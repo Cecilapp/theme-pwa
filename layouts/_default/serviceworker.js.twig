@@ -29,6 +29,9 @@ self.addEventListener('install', function(event) {
   {%- endif ~%}
   event.waitUntil(
     caches.open(CACHE).then(function(cache) {
+      {%- if site.debug|default(false) ~%}
+      console.log(`[SW] Create cache storage "${CACHE}"`);
+      {%- endif ~%}
       precache.forEach(function (path) {
         {%- if site.debug|default(false) ~%}
         console.log('[SW] Precache', path);
@@ -47,11 +50,10 @@ self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(keyList) {
       return Promise.all(keyList.map(function(key) {
-        // new version?
+        // cache obsolete?
         if (key !== CACHE) {
-          // flush cache
           {%- if site.debug|default(false) ~%}
-          console.log(`[SW] Remove old cache "${key}"`);
+          console.log(`[SW] Remove old cache storage "${key}"`);
           {%- endif ~%}
           return caches.delete(key);
         }
