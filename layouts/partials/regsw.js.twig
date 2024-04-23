@@ -19,7 +19,7 @@
             console.log('[SW] Registration successful with scope', registration.scope);
             {%- endif ~%}
             // checks if site have been updated
-            registration.update();
+            //registration.update();
             registration.addEventListener('updatefound', () => {
               const installingSW = registration.installing;
               {%- if site.debug|default(false) ~%}
