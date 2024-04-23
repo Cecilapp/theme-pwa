@@ -154,14 +154,14 @@
         to {opacity: 0;}
       }
       {% endapply %}</style>
-      <div id="snackbar"></div>
-      <script>{% apply minify_js ~%}
-        function showSnackbar(message) {
-          var snackbar = document.getElementById('snackbar');
-          snackbar.className = 'show';
-          snackbar.innerHTML = message;
-          setTimeout(() => {
-            snackbar.className = snackbar.className.replace('show', '');
-          }, 3000);
-        }
-      {% endapply %}</script>
+    <div id="snackbar"></div>
+    <script>{% apply minify_js ~%}
+      function showSnackbar(message) {
+        var snackbar = document.getElementById('snackbar');
+        snackbar.className = 'show';
+        snackbar.innerHTML = message;
+        setTimeout(() => {
+          snackbar.className = snackbar.className.replace('show', '');
+        }, 3000);
+      }
+    {% endapply %}</script>
