@@ -36,10 +36,12 @@
                     showSnackbar('{{ "New version is available, please reload"|trans }}');
                     {%- endif ~%}
                     // badge
-                    navigator.setAppBadge();
-                    setTimeout(() => {
-                      navigator.clearAppBadge();
-                    }, 3000);
+                    if (navigator.setAppBadge) {
+                      navigator.setAppBadge();
+                      setTimeout(() => {
+                        navigator.clearAppBadge();
+                      }, 3000);
+                    }
                     {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
                     // notification
                     {%- if site.debug|default(false) ~%}
