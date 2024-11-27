@@ -20,11 +20,11 @@ manifest:
   theme_color: '#202020'
   icons:
     - icon-192x192.png
-    - icon-512x512.png
-    - src: icon-192x192-maskable.png
-      purpose: maskable
-    - src: icon-512x512-maskable.png
-      purpose: maskable
+    #- icon-512x512.png
+    #- src: icon-192x192-maskable.png
+    #  purpose: maskable
+    #- src: icon-512x512-maskable.png
+    #  purpose: maskable
   shortcuts: false
 serviceworker:
   enabled: false
