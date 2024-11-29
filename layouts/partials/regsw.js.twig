@@ -103,11 +103,39 @@
         );
       };
       {%- endif ~%}
+      // install prompt
       {%- if not site.serviceworker.install.prompt ?? false ~%}
       window.addEventListener('beforeinstallprompt', (event) => {
-        // prevents the default install dialog from appearing on mobile
         event.preventDefault();
+        {%- if site.serviceworker.install.button ?? false ~%}
+        installPrompt = event;
+        installButton.removeAttribute('hidden');
+        {%- endif ~%}
       });
+        {%- if site.serviceworker.install.button ?? false ~%}
+      let installPrompt = null;
+      const installButton = document.querySelector('#install-button');
+      installButton.addEventListener('click', async () => {
+        if (!installPrompt) {
+          return;
+        }
+        const result = await installPrompt.prompt();
+        {%- if site.debug|default(false) ~%}
+        console.log('[WS] Install prompt was:', result.outcome);
+        {%- endif ~%}
+        disableInAppInstallPrompt();
+      });
+      window.addEventListener('appinstalled', () => {
+        {%- if site.debug|default(false) ~%}
+        console.log('[WS] PWA installed');
+        {%- endif ~%}
+        disableInAppInstallPrompt();
+      });
+      function disableInAppInstallPrompt() {
+        installPrompt = null;
+        installButton.setAttribute('hidden', '');
+      }
+        {%- endif ~%}
       {%- endif ~%}
       // offline?
       window.addEventListener('offline', () => {
