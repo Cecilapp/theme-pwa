@@ -75,8 +75,8 @@ Add [installer screenshots](https://developer.mozilla.org/docs/Web/Manifest/scre
 ```yaml
 manifest:
   screenshots:
-    - screenshots/screenshot-desktop.png
-    - screenshots/screenshot-mobile.png
+    - screenshots/desktop.png
+    - screenshots/mobile.png
 ```
 
 ### Service worker
