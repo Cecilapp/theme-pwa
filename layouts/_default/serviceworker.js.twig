@@ -9,7 +9,7 @@ var PATH_TO_IGNORE = [{{ site.serviceworker.ignore|map(i => "'#{i.path}'") | joi
 // prepares precache
 var precache = [];
 // pages
-{% set pages_to_precache = site.allpages|filter(p => p.published == true and p.redirect is not defined and p.serviceworker.precache ?? true != false)|sort((a, b) => a.path > b.path) %}
+{% set pages_to_precache = site.allpages|filter(p => p.published == true and p.redirect is not defined and (p.serviceworker.precache ?? true) != false)|sort((a, b) => a.path > b.path) %}
 {% for page in pages_to_precache|slice(0, (site.serviceworker.install.precache.pages.limit ?? false) == false ? pages_to_precache|length : site.serviceworker.install.precache.pages.limit) %}
 precache.push('{{ url(page, {canonical: false}) }}');
 {% endfor %}
