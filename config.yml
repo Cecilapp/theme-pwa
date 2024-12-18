@@ -26,22 +26,27 @@ manifest:
     #- src: icon-512x512-maskable.png
     #  purpose: maskable
   shortcuts: false
+  #screenshots:
+  #  - screenshots/desktop.png
+  #  - screenshots/mobile.png
 serviceworker:
   enabled: false
   install:
     prompt: true # show install prompt
     precache:
+      #assets:
+      #  - images/example.png # relative path
       pages:
         limit: false # number or false
-      #assets:
-      #  - images/example.png
+  cache:
+    request: reload # 'reload' or 'default'
   update:
     snackbar:
       enabled: false # show Snackbar message
+    badge:
+      enabled: false # set badge on the icon
     notification:
       enabled: false # show notification
-  cache:
-    request: reload # 'reload' or 'default'
   offline:
     page: offline # offline page ID
     snackbar:

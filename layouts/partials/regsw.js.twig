@@ -35,6 +35,7 @@
                     // snackbar
                     showSnackbar('{{ "New version is available, please reload"|trans }}');
                     {%- endif ~%}
+                    {%- if site.serviceworker.update.badge.enabled|default(false) ~%}
                     // badge
                     if (navigator.setAppBadge) {
                       navigator.setAppBadge();
@@ -42,6 +43,7 @@
                         navigator.clearAppBadge();
                       }, 3000);
                     }
+                    {%- endif ~%}
                     {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
                     // notification
                     {%- if site.debug|default(false) ~%}

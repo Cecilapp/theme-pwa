@@ -96,7 +96,15 @@ serviceworker:
 
 #### Service worker Optional
 
-Define precached assets:
+Disable browser install prompt:
+
+```yaml
+serviceworker:
+  install:
+    prompt: false
+```
+
+Set list of precached assets:
 
 ```yaml
 serviceworker:
@@ -110,7 +118,7 @@ serviceworker:
         - icon-512x512-maskable.png
 ```
 
-Limit number of precached pages:
+By default all published pages are precached. To limit this number:
 
 ```yaml
 serviceworker:
@@ -120,12 +128,22 @@ serviceworker:
         limit: 10
 ```
 
-Disable install prompt:
+Display a snackbar on update:
 
 ```yaml
 serviceworker:
-  install:
-    prompt: false
+  update:
+    snackbar:
+      enabled: true
+```
+
+Display a snackbar if connection lost:
+
+```yaml
+serviceworker:
+  offline:
+    snackbar:
+      enabled: true
 ```
 
 Define ignored paths:
