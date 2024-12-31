@@ -150,6 +150,7 @@
         {%- endif ~%}
       });
     {% endapply %}</script>
+    {#- snackbar element ~#}
     <style>{% apply minify_css ~%}
       #snackbar {
         visibility: hidden;
@@ -188,8 +189,14 @@
         to {opacity: 0;}
       }
       {% endapply %}</style>
-    <div id="snackbar"></div>
     <script>{% apply minify_js ~%}
+      // add `<div id="snackbar"></div>` in body
+      function addSnackbar() {
+        const snackbar = document.createElement('div');
+        snackbar.setAttribute('id', 'snackbar');
+        document.body.appendChild(snackbar);
+      }
+      // show snackbar div
       function showSnackbar(message) {
         var snackbar = document.getElementById('snackbar');
         snackbar.className = 'show';
@@ -198,4 +205,7 @@
           snackbar.className = snackbar.className.replace('show', '');
         }, 3000);
       }
+      addEventListener('load', () => {
+        addSnackbar();
+      });
     {% endapply %}</script>
