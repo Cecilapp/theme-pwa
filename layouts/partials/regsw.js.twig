@@ -1,110 +1,101 @@
     {#- service worker registration ~#}
     <script>{% apply minify_js ~%}
       if ('serviceWorker' in navigator) {
-        {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
-        // checks notification permission
-        Notification.requestPermission(permission => {
-          if (!('permission' in Notification)) {
-            Notification.permission = permission;
-          }
-          return permission;
-        })
-        {%- endif ~%}
-        {%- if site.serviceworker is defined and site.serviceworker.enabled ~%}
-        // register service worker
-        navigator.serviceWorker
-          .register('{{ url(site.page('serviceworker'), {canonical: true}) }}', { scope: '/' })
-          .then(function (registration) {
-            {%- if site.debug|default(false) ~%}
-            console.log('[SW] Registration successful with scope', registration.scope);
-            {%- endif ~%}
-            // checks if site have been updated
-            //registration.update();
-            registration.addEventListener('updatefound', () => {
-              const installingSW = registration.installing;
+        window.addEventListener('load', () => {
+          {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
+          // checks notification permission
+          Notification.requestPermission(permission => {
+            if (!('permission' in Notification)) {
+              Notification.permission = permission;
+            }
+            return permission;
+          })
+          {%- endif ~%}
+          {%- if site.serviceworker is defined and site.serviceworker.enabled ~%}
+          // register service worker
+          navigator.serviceWorker
+            .register('{{ url(site.page('serviceworker'), {canonical: true}) }}', { scope: '/' })
+            .then(function (registration) {
               {%- if site.debug|default(false) ~%}
-              console.log('[SW] A new version is being installed:', installingSW.state);
+              console.log('[SW] Registration successful with scope', registration.scope);
               {%- endif ~%}
-              installingSW.onstatechange = () => {
-                if (installingSW.state === 'installed') {
-                  if (navigator.serviceWorker.controller) {
-                    {%- if site.debug|default(false) ~%}
-                    console.log('[SW] New version is available.');
-                    {%- endif ~%}
-                    {%- if site.serviceworker.update.snackbar.enabled|default(false) ~%}
-                    // snackbar
-                    showSnackbar('{{ "New version is available, please reload"|trans }}');
-                    {%- endif ~%}
-                    {%- if site.serviceworker.update.badge.enabled|default(false) ~%}
-                    // badge
-                    if (navigator.setAppBadge) {
-                      navigator.setAppBadge();
-                      setTimeout(() => {
-                        navigator.clearAppBadge();
-                      }, 3000);
-                    }
-                    {%- endif ~%}
-                    {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
-                    // notification
-                    {%- if site.debug|default(false) ~%}
-                    console.log('[SW] Notification enabled');
-                    {%- endif ~%}
-                    Notification.requestPermission().then((result) => {
-                      if (result === "granted") {
-                        navigator.serviceWorker.ready.then((registration) => {
-                          const title = "{{ 'Update of %title%'|trans({'%title%': site.title}) }}";
-                          const options = {
-                            body: "{{ 'Website updated since your last visit.'|trans }}",
-                            icon: '{{ asset(site.manifest.icons|first) }}',
-                            vibrate: [200, 100, 100, 100]
-                          };
-                          registration.showNotification(title, options);
-                        });
+              // checks if site have been updated
+              //registration.update();
+              registration.addEventListener('updatefound', () => {
+                const installingSW = registration.installing;
+                {%- if site.debug|default(false) ~%}
+                console.log('[SW] A new version is being installed:', installingSW.state);
+                {%- endif ~%}
+                installingSW.onstatechange = () => {
+                  if (installingSW.state === 'installed') {
+                    if (navigator.serviceWorker.controller) {
+                      {%- if site.debug|default(false) ~%}
+                      console.log('[SW] New version is available.');
+                      {%- endif ~%}
+                      {%- if site.serviceworker.update.snackbar.enabled|default(false) ~%}
+                      // snackbar
+                      showSnackbar('{{ "New version is available, please reload"|trans }}');
+                      {%- endif ~%}
+                      {%- if site.serviceworker.update.badge.enabled|default(false) ~%}
+                      // badge
+                      if (navigator.setAppBadge) {
+                        navigator.setAppBadge();
+                        setTimeout(() => {
+                          navigator.clearAppBadge();
+                        }, 3000);
                       }
-                    });
-                    {%- endif ~%}
+                      {%- endif ~%}
+                      {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
+                      // notification
+                      {%- if site.debug|default(false) ~%}
+                      console.log('[SW] Notification enabled');
+                      {%- endif ~%}
+                      Notification.requestPermission().then((result) => {
+                        if (result === "granted") {
+                          navigator.serviceWorker.ready.then((registration) => {
+                            const title = "{{ 'Update of %title%'|trans({'%title%': site.title}) }}";
+                            const options = {
+                              body: "{{ 'Website updated since your last visit.'|trans }}",
+                              icon: '{{ asset(site.manifest.icons|first) }}',
+                              vibrate: [200, 100, 100, 100]
+                            };
+                            registration.showNotification(title, options);
+                          });
+                        }
+                      });
+                      {%- endif ~%}
+                    }
                   }
                 }
-              }
+              });
+            })
+            .catch(function (error) {
+              console.log('[SW]', error);
             });
+          {%- endif ~%}
+          {%- if site.serviceworker is defined and not site.serviceworker.enabled ~%}
+          // Service worker is disabled:
+          // 1. unregister
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            registrations.forEach(registration => {
+              {%- if site.debug|default(false) ~%}
+              console.log('[SW] Unregister');
+              {%- endif ~%}
+              registration.unregister()
+            })
           })
-          .catch(function (error) {
-            console.log('[SW]', error);
+          // 2. remove cache
+          caches.keys().then(function(keyList) {
+            Promise.all(keyList.map(function(key) {
+              {%- if site.debug|default(false) ~%}
+              console.log('[SW] Remove cache');
+              {%- endif ~%}
+              caches.delete(key);
+            }));
           });
-        {%- endif ~%}
-        {%- if site.serviceworker is defined and not site.serviceworker.enabled ~%}
-        // Service worker is disabled:
-        // 1. unregister
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-          registrations.forEach(registration => {
-            {%- if site.debug|default(false) ~%}
-            console.log('[SW] Unregister');
-            {%- endif ~%}
-            registration.unregister()
-          })
+          {%- endif ~%}
         })
-        // 2. remove cache
-        caches.keys().then(function(keyList) {
-          Promise.all(keyList.map(function(key) {
-            {%- if site.debug|default(false) ~%}
-            console.log('[SW] Remove cache');
-            {%- endif ~%}
-            caches.delete(key);
-          }));
-        });
-        {%- endif ~%}
       }
-      {%- if site.serviceworker is defined and site.debug|default(false) ~%}
-      // cache storage usage
-      if ('webkitTemporaryStorage' in navigator && 'queryUsageAndQuota' in navigator.webkitTemporaryStorage) {
-        navigator.webkitTemporaryStorage.queryUsageAndQuota(
-          function (usedBytes, grantedBytes) {
-            console.log('Storage usage:', (usedBytes / 1048576).toFixed(2), '/', (grantedBytes / 1048576).toFixed(0), 'Mo');
-          },
-          function (error) { console.log('Error', error); }
-        );
-      };
-      {%- endif ~%}
       // install prompt
       {%- if not site.serviceworker.install.prompt ?? false ~%}
       window.addEventListener('beforeinstallprompt', (event) => {
@@ -138,6 +129,17 @@
         installButton.setAttribute('hidden', '');
       }
         {%- endif ~%}
+      {%- endif ~%}
+      {%- if site.serviceworker is defined and site.debug|default(false) ~%}
+      // cache storage usage
+      if ('webkitTemporaryStorage' in navigator && 'queryUsageAndQuota' in navigator.webkitTemporaryStorage) {
+        navigator.webkitTemporaryStorage.queryUsageAndQuota(
+          function (usedBytes, grantedBytes) {
+            console.log('Storage usage:', (usedBytes / 1048576).toFixed(2), '/', (grantedBytes / 1048576).toFixed(0), 'Mo');
+          },
+          function (error) { console.log('Error', error); }
+        );
+      };
       {%- endif ~%}
       // offline?
       window.addEventListener('offline', () => {
