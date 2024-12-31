@@ -4,13 +4,12 @@ The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to imp
 
 ## Features
 
-- Generated and configurable Web manifest
-- Generated and configurable service worker
-- Automatic caching of visited resources
-- No dependencies, vanilla JavaScript
-- Precaching of published pages
-- Precaching of a list of assets
-- Generic offline page and default image (SVG)
+- Generated and configurable **Web manifest**
+- Generated and configurable **service worker**
+- **Automatic caching** of visited resources
+- **No dependencies**, vanilla JavaScript
+- **Precaching** of assets and published pages
+- **Offline support** and image placeholder
 
 ## Prerequisites
 
@@ -61,16 +60,23 @@ manifest:
 > [!TIP]
 > Create your own [maskable icons](https://web.dev/articles/maskable-icon) with [Maskable.app](https://maskable.app/editor).
 
+> [!NOTE]
+> You can easily inject the theme color in your main template:
+>
+> ```html
+> <meta name="theme-color" content="{{ site.manifest.theme_color|default('#202020') }}" />
+> ```
+
 #### Web manifest Optional
 
-Add [shortcuts](https://developer.mozilla.org/docs/Web/Manifest/shortcuts):
+Add [shortcuts](https://developer.mozilla.org/docs/Web/Manifest/shortcuts) from the `main` menu entries:
 
 ```yaml
 manifest:
   shortcuts: true
 ```
 
-Add [installer screenshots](https://developer.mozilla.org/docs/Web/Manifest/screenshots):
+Provide [installer screenshots](https://developer.mozilla.org/docs/Web/Manifest/screenshots):
 
 ```yaml
 manifest:
@@ -81,10 +87,10 @@ manifest:
 
 ### Service worker
 
-**Register** the service worker before the end of the HTML `</body>` of the main template:
+**Register** the service worker from the HTML `<header>` of the main template:
 
 ```twig
-{{ include('partials/regsw.js.twig', {site: site}, with_context = false) }}
+{{ include('partials/regsw.js.twig', {site}, with_context = false) }}
 ```
 
 Enable the service worker:
@@ -112,10 +118,6 @@ serviceworker:
     precache:
       assets:
         - logo.png
-        - icon-192x192.png
-        - icon-512x512.png
-        - icon-192x192-maskable.png
-        - icon-512x512-maskable.png
 ```
 
 By default all published pages are precached. To limit this number:
