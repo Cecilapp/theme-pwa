@@ -101,14 +101,14 @@
       window.addEventListener('load', () => {
         window.addEventListener('beforeinstallprompt', (event) => {
           event.preventDefault();
-          {%- if site.serviceworker.install.button ?? false ~%}
+          {%- if site.serviceworker.install.button is not empty ~%}
           installPrompt = event;
           installButton.removeAttribute('hidden');
           {%- endif ~%}
         });
-          {%- if site.serviceworker.install.button ?? false ~%}
+          {%- if site.serviceworker.install.button is not empty ~%}
         let installPrompt = null;
-        const installButton = document.querySelector('#install-button');
+        const installButton = document.querySelector(site.serviceworker.install.button);
         installButton.addEventListener('click', async () => {
           if (!installPrompt) {
             return;

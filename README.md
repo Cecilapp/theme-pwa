@@ -34,15 +34,15 @@ theme:
   - pwa
 ```
 
-### Web manifest
-
-Add the [web manifest](https://developer.mozilla.org/docs/Web/Manifest) in the HTML `<header>` of the main template:
+Add the following line in the HTML `<header>` of the main template:
 
 ```twig
-<link rel="manifest" href="{{ url('manifest') }}">
+{{ include('partials/pwa.html.twig', {site}, with_context = false) }}
 ```
 
-Configure it:
+### Web manifest
+
+Configure [web manifest](https://developer.mozilla.org/docs/Web/Manifest) options:
 
 ```yaml
 manifest:
@@ -59,13 +59,6 @@ manifest:
 
 > [!TIP]
 > Create your own [maskable icons](https://web.dev/articles/maskable-icon) with [Maskable.app](https://maskable.app/editor).
-
-> [!NOTE]
-> You can easily inject the theme color in your main template:
->
-> ```html
-> <meta name="theme-color" content="{{ site.manifest.theme_color|default('#202020') }}" />
-> ```
 
 #### Web manifest Optional
 
@@ -87,12 +80,6 @@ manifest:
 
 ### Service worker
 
-**Register** the service worker from the HTML `<header>` of the main template:
-
-```twig
-{{ include('partials/regsw.js.twig', {site}, with_context = false) }}
-```
-
 Enable the service worker:
 
 ```yaml
@@ -102,12 +89,17 @@ serviceworker:
 
 #### Service worker Optional
 
-Disable browser install prompt:
+Disable browser install prompt, and use custom install button:
 
 ```yaml
 serviceworker:
   install:
     prompt: false
+    button: '#install-button' # query selector
+```
+
+```html
+<button id="install-button" hidden>Install App</button>
 ```
 
 Set list of precached assets:
@@ -130,19 +122,13 @@ serviceworker:
         limit: 10
 ```
 
-Display a snackbar on update:
+Display a snackbar on update or connection lost:
 
 ```yaml
 serviceworker:
   update:
     snackbar:
       enabled: true
-```
-
-Display a snackbar if connection lost:
-
-```yaml
-serviceworker:
   offline:
     snackbar:
       enabled: true

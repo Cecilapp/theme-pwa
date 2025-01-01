@@ -33,6 +33,7 @@ serviceworker:
   enabled: false
   install:
     prompt: true # show install prompt
+    button: #'#install-button' # install button query selector
     precache:
       #assets:
       #  - images/example.png # relative path
