@@ -108,7 +108,7 @@
         });
           {%- if site.serviceworker.install.button is not empty ~%}
         let installPrompt = null;
-        const installButton = document.querySelector(site.serviceworker.install.button);
+        const installButton = document.querySelector('{{ site.serviceworker.install.button }}');
         installButton.addEventListener('click', async () => {
           if (!installPrompt) {
             return;
