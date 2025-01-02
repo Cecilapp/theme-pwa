@@ -10,6 +10,7 @@ The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to imp
 - **No dependencies**, vanilla JavaScript
 - **Precaching** of assets and published pages
 - **Offline support** and image placeholder
+- Custom **install button** support instead of browser prompt
 
 ## Prerequisites
 
@@ -49,12 +50,12 @@ manifest:
   background_color: '#FFFFFF'
   theme_color: '#202020'
   icons:
-    - icon-192x192.png
-    - icon-512x512.png
-    - src: icon-192x192-maskable.png
-      purpose: maskable
-    - src: icon-512x512-maskable.png
-      purpose: maskable
+    - icon-192x192.png # required
+    - icon-512x512.png # required
+    #- src: icon-192x192-maskable.png
+    #  purpose: maskable
+    #- src: icon-512x512-maskable.png
+    #  purpose: maskable
 ```
 
 > [!TIP]
@@ -102,14 +103,13 @@ serviceworker:
 <button id="install-button" hidden>Install App</button>
 ```
 
-Set list of precached assets:
+Icons are precached by default. To disable this behavior:
 
 ```yaml
 serviceworker:
   install:
     precache:
-      assets:
-        - logo.png
+      icons: false
 ```
 
 By default all published pages are precached. To limit this number:
@@ -122,7 +122,17 @@ serviceworker:
         limit: 10
 ```
 
-Display a snackbar on update or connection lost:
+Set list of precached assets:
+
+```yaml
+serviceworker:
+  install:
+    precache:
+      assets:
+        - logo.png
+```
+
+Display a snackbar on update and connection lost:
 
 ```yaml
 serviceworker:

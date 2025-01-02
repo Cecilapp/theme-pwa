@@ -19,7 +19,7 @@ manifest:
   background_color: '#FFFFFF'
   theme_color: '#202020'
   icons:
-    #- icon-192x192.png
+    - icon-192x192.png
     - icon-512x512.png
     #- src: icon-192x192-maskable.png
     #  purpose: maskable
@@ -35,10 +35,11 @@ serviceworker:
     prompt: true # show install prompt
     button: #'#install-button' # install button query selector
     precache:
-      #assets:
-      #  - images/example.png # relative path
+      icons: true # precache icons
       pages:
         limit: false # number or false
+      #assets:
+      #  - images/example.png # relative path
   cache:
     request: reload # 'reload' or 'default'
   update:
