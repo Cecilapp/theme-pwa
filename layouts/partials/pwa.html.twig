@@ -3,5 +3,5 @@
     {%- if site.manifest.theme_color_dark is defined ~%}
     <meta name="theme-color" content="{{ site.manifest.theme_color_dark }}" media="(prefers-color-scheme: dark)" />
     {%- endif ~%}
-    <link rel="manifest" href="{{ url('manifest') }}" />
+    <link rel="manifest" href="{{ url('manifest', {language: site.language}) }}" />
     {{- include('partials/regsw.js.twig', {site}, with_context = false) ~}}
