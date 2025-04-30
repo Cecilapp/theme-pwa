@@ -43,13 +43,9 @@ serviceworker:
   cache:
     request: reload # 'reload' or 'default'
   update:
-    snackbar:
-      enabled: false # show Snackbar message
-    badge:
-      enabled: false # set badge on the icon
-    notification:
-      enabled: false # show notification
+    snackbar: false # show Snackbar message
+    badge: false # set badge on the icon
+    notification: false # show notification
   offline:
     page: offline # offline page ID
-    snackbar:
-      enabled: false # show Snackbar message
+    snackbar: false # show Snackbar message

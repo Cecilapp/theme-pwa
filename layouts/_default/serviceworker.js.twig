@@ -156,7 +156,7 @@ self.addEventListener('fetch', function(event) {
   );
 });
 
-{%- if site.serviceworker.update.notification.enabled|default(false) ~%}
+{%- if site.serviceworker.update.notification|default(false) ~%}
 // notification click
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();

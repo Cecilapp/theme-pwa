@@ -137,11 +137,9 @@ Display a snackbar on update and connection lost:
 ```yaml
 serviceworker:
   update:
-    snackbar:
-      enabled: true
+    snackbar: true
   offline:
-    snackbar:
-      enabled: true
+    snackbar: true
 ```
 
 Define ignored paths:

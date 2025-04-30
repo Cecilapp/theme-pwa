@@ -2,7 +2,7 @@
     <script>{% apply minify_js ~%}
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
+          {%- if site.serviceworker.update.notification|default(false) ~%}
           // checks notification permission
           Notification.requestPermission(permission => {
             if (!('permission' in Notification)) {
@@ -32,11 +32,11 @@
                       {%- if site.debug|default(false) ~%}
                       console.log('[SW] New version is available.');
                       {%- endif ~%}
-                      {%- if site.serviceworker.update.snackbar.enabled|default(false) ~%}
+                      {%- if site.serviceworker.update.snackbar|default(false) ~%}
                       // snackbar
                       showSnackbar('{{ "New version is available, please reload"|trans }}');
                       {%- endif ~%}
-                      {%- if site.serviceworker.update.badge.enabled|default(false) ~%}
+                      {%- if site.serviceworker.update.badge|default(false) ~%}
                       // badge
                       if (navigator.setAppBadge) {
                         navigator.setAppBadge();
@@ -45,7 +45,7 @@
                         }, 3000);
                       }
                       {%- endif ~%}
-                      {%- if site.serviceworker.update.notification.enabled|default(false) ~%}
+                      {%- if site.serviceworker.update.notification|default(false) ~%}
                       // notification
                       {%- if site.debug|default(false) ~%}
                       console.log('[SW] Notification enabled');
@@ -146,7 +146,7 @@
       // offline?
       window.addEventListener('offline', () => {
         console.log('Network connection lost.');
-        {%- if site.serviceworker.offline.snackbar.enabled|default(false) ~%}
+        {%- if site.serviceworker.offline.snackbar|default(false) ~%}
         // snackbar
         showSnackbar('{{ "You are offline"|trans }}');
         {%- endif ~%}
