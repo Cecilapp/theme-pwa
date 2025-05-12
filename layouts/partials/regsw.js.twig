@@ -96,7 +96,7 @@
           {%- endif ~%}
         })
       }
-      {%- if not site.serviceworker.install.prompt ?? false ~%}
+      {%- if not (site.serviceworker.install.prompt ?? false) ~%}
       // install prompt
       window.addEventListener('load', () => {
         window.addEventListener('beforeinstallprompt', (event) => {
