@@ -57,7 +57,8 @@ self.addEventListener('activate', function(event) {
   {%- if site.debug|default(false) ~%}
   console.log('[SW] Activate');
   {%- endif ~%}
-  event.waitUntil(
+  const activate = async () => {
+    // checks cache version
     caches.keys().then(function(keyList) {
       return Promise.all(keyList.map(function(key) {
         // cache obsolete?
@@ -69,7 +70,10 @@ self.addEventListener('activate', function(event) {
         }
       }));
     })
-  );
+    // claim clients immediately
+    self.clients.claim();
+  };
+  event.waitUntil(activate());
 });
 
 // fetch
