@@ -50,13 +50,16 @@ manifest:
   background_color: '#FFFFFF'
   theme_color: '#202020'
   icons:
-    - icon-192x192.png # required
-    - icon-512x512.png # required
-    #- src: icon-192x192-maskable.png
-    #  purpose: maskable
-    #- src: icon-512x512-maskable.png
-    #  purpose: maskable
+    - icon-192x192.png
+    - icon-512x512.png
+    - src: icon-192x192-maskable.png
+      purpose: maskable
+    - src: icon-512x512-maskable.png
+      purpose: maskable
 ```
+
+> [!NOTE]
+> The `icons` section is optional. If not provided, the theme will generate a default set of icons based on the `icon.png` (and `icon-maskable.png`) file in the _assets_ directory of your website.
 
 > [!TIP]
 > Create your own [maskable icons](https://web.dev/articles/maskable-icon) with [Maskable.app](https://maskable.app/editor).
