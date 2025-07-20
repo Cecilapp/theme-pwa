@@ -10,7 +10,7 @@
     }
 {%- endmacro %}
 {%- set icons %}
-  {%- if site.manifest.icons|length > 0 %}
+  {%- if site.manifest.icons|default([])|length > 0 %}
     {%- for icon in site.manifest.icons %}
       {#- icon with options #}
       {%- if icon is iterable %}
@@ -47,7 +47,7 @@
 {% endset -%}
 {#- screenshots #}
 {%- set screenshots %}
-  {%- for screenshot in site.manifest.screenshots|default({}) -%}
+  {%- for screenshot in site.manifest.screenshots|default([]) -%}
     {%- set screenshot_asset = asset(screenshot) -%}
     {
       "src": "{{ screenshot_asset|url }}",

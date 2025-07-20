@@ -10,7 +10,7 @@ var PATH_TO_IGNORE = [{{ site.serviceworker.ignore|map(i => "'#{i.path}'") | joi
 var precache = [];
 {% if site.serviceworker.install.precache.icons ?? false %}
 // icons
-  {%- for icon in site.manifest.icons %}
+  {%- for icon in site.manifest.icons|default([]) %}
     {%- if icon is iterable ~%}
 precache.push('{{ asset(icon.src)|url({canonical: false}) }}');
     {%- else ~%}
