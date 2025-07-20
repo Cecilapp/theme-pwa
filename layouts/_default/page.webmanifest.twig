@@ -31,7 +31,7 @@
 {% endset -%}
 {
   "name": "{{ site.title }}",
-  "short_name": "{{ site.title }}",
+  "short_name": "{{ site.title[:12] }}",
   "description": "{{ site.description }}",
   "display": "{{ site.manifest.display|default('standalone') }}",
   "start_url": "{{ site.manifest.start_url|default(url(site.home, {canonical: true})) }}",
@@ -59,7 +59,7 @@
   {%- for item in site.menus.main|filter(i => 'http' not in i.url)|sort_by_weight ~%}
     {
       "name": "{{ item.name }}",
-      "short_name": "{{ item.name }}",
+      "short_name": "{{ item.name[:12] }}",
       "url": "{{ url(item.url) }}",
       "icons": [
         {{-  icons -}}
