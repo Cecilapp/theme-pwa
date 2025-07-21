@@ -83,7 +83,6 @@
   {%- for item in site.menus.main|filter(i => 'http' not in i.url)|sort_by_weight ~%}
     {
       "name": "{{ item.name }}",
-      "short_name": "{{ item.name[:12] }}",
       "url": "{{ url(item.url) }}",
       "icons": [
         {
