@@ -59,7 +59,7 @@ manifest:
 ```
 
 > [!NOTE]
-> The `icons` section is optional. If not provided, the theme will generate a default set of icons based on the `icon.png` (and `icon-maskable.png`) file in the _assets_ directory of your website.
+> The `icons` section is optional. If not provided, the theme will generate a default set of icons based on the `icon.png` file in the _assets_ directory of your website.
 
 > [!TIP]
 > Create your own [maskable icons](https://web.dev/articles/maskable-icon) with [Maskable.app](https://maskable.app/editor).

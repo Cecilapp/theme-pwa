@@ -1,9 +1,9 @@
 {#- icons #}
-{%- macro icon(icon_asset, purpose = '') -%}
+{%- macro icon(asset, purpose = '') -%}
     {
-      "src": "{{ icon_asset|url }}",
-      "sizes": "{{ icon_asset.width }}x{{ icon_asset.height }}",
-      "type": "{{ icon_asset.subtype }}"
+      "src": "{{ asset|url }}",
+      "sizes": "{{ asset.width }}x{{ asset.height }}",
+      "type": "{{ asset.subtype }}"
       {%- if purpose %},
       "purpose": "{{ purpose }}"
       {%- endif ~%}
@@ -28,20 +28,13 @@
     {%- endif %}{% if loop.length > 1 and not loop.last %},{% endif %}
     {%- endfor %}
   {%- else %}
+    {# creates icons from `icon.png` if exists #}
     {%- set icon_asset = asset('icon.png', {'ignore_missing': true}) %}
-    {%- if not icon_asset.missing and icon_asset.width >= 512 %}
-      {%- set icon_asset_512 = icon_asset|resize(512) -%}
-    {{- _self.icon(icon_asset_512) }},
-      {%- set icon_asset_192 = icon_asset|resize(192) -%}
-    {{- _self.icon(icon_asset_192) }}
-    {%- endif %}
-    {#- maskable #},
-    {%- set icon_asset = asset('icon-maskable.png', {'ignore_missing': true}) %}
-    {%- if not icon_asset.missing and icon_asset.width >= 512 %}
-      {%- set icon_asset_512 = icon_asset|resize(512) -%}
-    {{- _self.icon(icon_asset_512, 'maskable') }},
-      {%- set icon_asset_192 = icon_asset|resize(192) -%}
-    {{- _self.icon(icon_asset_192, 'maskable') }}
+    {%- if not icon_asset.missing %}
+    {{- _self.icon(icon_asset|resize(192)) }},
+    {{- _self.icon(icon_asset|resize(512)) }},
+    {{- _self.icon(icon_asset|resize(192)|maskable, 'maskable') }},
+    {{- _self.icon(icon_asset|resize(512)|maskable, 'maskable') }}
     {%- endif %}
   {%- endif %}
 {% endset -%}
@@ -73,10 +66,12 @@
   "icons": [
     {{ icons }}
   ],
+  {%- if screenshots %}
   "screenshots": [
     {{- screenshots -}}
   ]
-  {%- if site.serviceworker.enabled|default(false) %},
+  ,{%- endif %}
+  {%- if site.serviceworker.enabled|default(false) ~%}
   "serviceworker": {
     "src": "{{ url(site.page('serviceworker'), {canonical: true}) }}",
     "scope": "/",
