@@ -86,7 +86,11 @@
       "short_name": "{{ item.name[:12] }}",
       "url": "{{ url(item.url) }}",
       "icons": [
-        {{ icons }}
+        {
+          "src": "{{ asset('icon-link.png')|url }}",
+          "sizes": "{{ asset('icon-link.png').width }}x{{ asset('icon-link.png').height }}",
+          "type": "{{ asset('icon-link.png').subtype }}"
+        }
       ]
     }{% if loop.length > 1 and not loop.last %},{% endif ~%}
   {%- endfor ~%}
