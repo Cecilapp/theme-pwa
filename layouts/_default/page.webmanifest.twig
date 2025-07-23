@@ -28,7 +28,7 @@
     {%- endif %}{% if loop.length > 1 and not loop.last %},{% endif %}
     {%- endfor %}
   {%- else %}
-    {# creates icons from `icon.png` if exists #}
+    {#- creates icons from `icon.png` if exists #}
     {%- set icon_asset = asset('icon.png', {'ignore_missing': true}) %}
     {%- if not icon_asset.missing %}
     {{- _self.icon(icon_asset|resize(192)) }},
