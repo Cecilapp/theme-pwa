@@ -52,9 +52,9 @@
 {% endset -%}
 {#- main -#}
 {
-  "name": "{{ site.title }}",
-  "short_name": "{{ site.title[:12] }}",
-  "description": "{{ site.description }}",
+  "name": "{{ site.manifest.name|default(site.title) }}",
+  "short_name": "{{ site.manifest.short_name|default(site.title[:12]) }}",
+  "description": "{{ site.manifest.description|default(site.description) }}",
   "display_override": ["{{ site.manifest.display_override|default('standalone') }}"],
   "display": "{{ site.manifest.display|default('standalone') }}",
   "start_url": "{{ site.manifest.start_url|default(url(site.home, {canonical: true})) }}",
