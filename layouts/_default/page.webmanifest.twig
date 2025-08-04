@@ -66,13 +66,13 @@
   "dir": "{{ site.manifest.dir|default('ltr') }}",
   "icons": [
     {{ icons }}
-  ],
-  {%- if screenshots %}
+  ]
+  {%- if screenshots %},
   "screenshots": [
     {{- screenshots -}}
   ]
-  ,{%- endif %}
-  {%- if site.serviceworker.enabled|default(false) ~%}
+  {%- endif %}
+  {%- if site.serviceworker.enabled|default(false) ~%},
   "serviceworker": {
     "src": "{{ url(site.page('serviceworker'), {canonical: true}) }}",
     "scope": "/",
