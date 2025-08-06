@@ -152,7 +152,7 @@ self.addEventListener('fetch', function(event) {
         }
         // offline image
         if (event.request.destination === 'image') {
-          return new Response('<svg role="img" aria-labelledby="offline-title" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"><title id="offline-title">{{ 'Offline'|trans }}</title><g fill="none" fill-rule="evenodd"><path fill="#D8D8D8" d="M0 0h400v300H0z"/><text fill="#505050" font-family="Helvetica Neue,Arial,Helvetica,sans-serif" font-size="72" font-style="italic"><tspan x="{{ 400 // 'Offline'|trans|length }}" y="172">{{ 'Offline'|trans }}</tspan></text></g></svg>', { headers: { 'Content-Type': 'image/svg+xml' } });
+          return new Response('<svg role="img" aria-labelledby="offline-title" viewBox="-102.4 -102.4 716.80 716.80" xmlns="http://www.w3.org/2000/svg" fill="#505050" stroke="#505050"><title id="offline-title">{{ 'Offline'|trans }}</title><g><path d="M93.72,183.25C49.49,198.05,16,233.1,16,288c0,66,54,112,120,112H320.37" style="fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><path d="M467.82,377.74C485.24,363.3,496,341.61,496,312c0-59.82-53-85.76-96-88-8.89-89.54-71-144-144-144-26.16,0-48.79,6.93-67.6,18.14" style="fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><line x1="448" y1="448" x2="64" y2="64" style="fill:none;stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"></line></g></svg>', { headers: { 'Content-Type': 'image/svg+xml' } });
         }
         return Response.error();
       });
