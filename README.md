@@ -59,6 +59,7 @@ manifest:
 ```
 
 > [!NOTE]
+> You can specify a dark theme color with `theme_color_dark` option.  
 > The `icons` section is optional. If not provided, the theme will generate a default set of icons based on the `icon.png` file in the _assets_ directory of your website.
 
 > [!TIP]
