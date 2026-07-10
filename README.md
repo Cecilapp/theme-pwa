@@ -24,7 +24,7 @@ The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to imp
 composer require cecil/theme-pwa
 ```
 
-> Or [download the latest archive](https://github.com/Cecilapp/theme-pwa/releases/latest/) and uncompress its content in `themes/pwa`.
+> Or [download the latest archive](https://github.com/Cecilapp/theme-pwa/releases/latest/) and uncompress its contents in `themes/pwa`.
 
 ## Usage
 
@@ -35,7 +35,7 @@ theme:
   - pwa
 ```
 
-Add the following line in the HTML `<header>` of the main template:
+Add the following line in the HTML `<head>` of the main template:
 
 ```twig
 {{ include('partials/pwa.html.twig', {site}, with_context = false) }}
@@ -59,13 +59,13 @@ manifest:
 ```
 
 > [!NOTE]
-> You can specify a dark theme color with `theme_color_dark` option.  
+> You can specify a dark theme color with the `theme_color_dark` option.  
 > The `icons` section is optional. If not provided, the theme will generate a default set of icons based on the `icon.png` file in the _assets_ directory of your website.
 
 > [!TIP]
 > Create your own [maskable icons](https://web.dev/articles/maskable-icon) with [Maskable.app](https://maskable.app/editor).
 
-#### Web manifest Optional
+#### Optional Web manifest settings
 
 Add [shortcuts](https://developer.mozilla.org/docs/Web/Manifest/shortcuts) from the `main` menu entries:
 
@@ -92,9 +92,9 @@ serviceworker:
   enabled: true
 ```
 
-#### Service worker Optional
+#### Optional service worker settings
 
-Disable browser install prompt, and use custom install button:
+Disable the browser install prompt and use a custom install button:
 
 ```yaml
 serviceworker:
@@ -116,7 +116,7 @@ serviceworker:
       icons: false
 ```
 
-By default all published pages are precached. To limit this number:
+By default, all published pages are precached. To limit this number:
 
 ```yaml
 serviceworker:
@@ -126,7 +126,7 @@ serviceworker:
         limit: 10
 ```
 
-Set list of precached assets:
+Set the list of precached assets:
 
 ```yaml
 serviceworker:
@@ -136,7 +136,7 @@ serviceworker:
         - logo.png
 ```
 
-Display a snackbar on update and connection lost:
+Display a snackbar on update and on connection loss:
 
 ```yaml
 serviceworker:
