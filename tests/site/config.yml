@@ -17,21 +17,19 @@ menus:
     - id: about
       name: 'About "us"'
       url: /about/
-manifest:
-  shortcuts: true
-  display_override: [window-controls-overlay, standalone]
-serviceworker:
-  enabled: true
-  ignore:
-    - path: "/admin'x"
-  install:
-    prompt: false
-    button: '#install-button'
-    precache:
-      pages:
-        limit: 1
-  update:
-    snackbar: true
-    notification: true
-  offline:
-    snackbar: true
+pwa:
+  manifest:
+    shortcuts: true
+    display_override: [window-controls-overlay, standalone]
+  serviceworker:
+    enabled: true
+    ignore:
+      - path: "/admin'x"
+    install:
+      prompt: false
+      button: '#install-button'
+    update:
+      snackbar: true
+      notification: true
+    offline:
+      snackbar: true

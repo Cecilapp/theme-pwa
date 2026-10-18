@@ -1,6 +1,8 @@
 {#- source: https://web.dev/articles/offline-fallback-page -#}
-{%- set background_color = site.manifest.background_color|default('#FFFFFF') %}
-{%- set theme_color = site.manifest.theme_color|default('#202020') %}
+{#- options (`manifest` at the root of the configuration is deprecated since 3.0) #}
+{%- set manifest = (site.pwa.manifest ?? {})|merge(site.manifest ?? {}) %}
+{%- set background_color = manifest.background_color|default('#FFFFFF') %}
+{%- set theme_color = manifest.theme_color|default('#202020') %}
 <!DOCTYPE html>
 <html lang="{{ site.language }}">
   <head>
@@ -19,7 +21,7 @@
         :root {
           --pwa-offline-background: Canvas;
           --pwa-offline-color: CanvasText;
-          --pwa-offline-accent: {{ site.manifest.theme_color_dark|default('CanvasText') }};
+          --pwa-offline-accent: {{ manifest.theme_color_dark|default('CanvasText') }};
         }
       }
       body {

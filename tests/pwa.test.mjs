@@ -1,6 +1,8 @@
 // Tests the files generated from the test site (`tests/site/_site`):
 //   php tests/link.php
 //   php cecil.phar build tests/site
+//   php cecil.phar build tests/site --config=legacy.yml --output=_site-legacy
+//   php cecil.phar build tests/site --config=autoescape.yml --output=_site-autoescape
 //   node --test tests/pwa.test.mjs
 // The service worker runs with an in-memory Cache Storage and a fake network.
 import { test, describe, beforeEach } from 'node:test';
@@ -53,6 +55,39 @@ describe('Inline scripts', () => {
   });
 });
 
+describe('Deprecated 2.x options (root `manifest` and `serviceworker` keys)', () => {
+  const readLegacy = file => fs.readFileSync(path.join(SITE, '..', '_site-legacy', file), 'utf8');
+
+  test('are still applied', () => {
+    assert.equal(JSON.parse(readLegacy('manifest.webmanifest')).theme_color, '#FF0000');
+    assert.doesNotMatch(readLegacy('index.html'), /pwaSnackbar\.show\('New/);
+    assert.match(read('index.html'), /pwaSnackbar\.show\('New/);
+  });
+
+  test('display a warning in debug mode only', () => {
+    assert.match(readLegacy('index.html'), /console\.warn\('\[PWA\] The `manifest` and `serviceworker` options/);
+    assert.doesNotMatch(read('index.html'), /console\.warn\('\[PWA\]/);
+  });
+});
+
+describe('Extension-based autoescape (`layouts.autoescape: null`)', () => {
+  const readAutoescape = file => fs.readFileSync(path.join(SITE, '..', '_site-autoescape', file), 'utf8');
+  const scripts = html => [...html.matchAll(/<script>(.*?)<\/script>/gs)].map(m => m[1]);
+
+  test('is enabled (HTML is escaped)', () => {
+    assert.match(readAutoescape('offline.html'), /<title>[^<]*L&#039;atelier &quot;test&quot; &amp; co<\/title>/);
+  });
+
+  test('does not alter the Web manifest, the service worker and inline scripts', () => {
+    assert.deepEqual(JSON.parse(readAutoescape('manifest.webmanifest')), JSON.parse(read('manifest.webmanifest')));
+    const withoutVersion = js => js.replace(/var CACHE_VERSION = '[^']*';/, '');
+    assert.equal(withoutVersion(readAutoescape('serviceworker.js')), withoutVersion(read('serviceworker.js')));
+    for (const file of ['index.html', 'fr/index.html', 'offline.html']) {
+      assert.deepEqual(scripts(readAutoescape(file)), scripts(read(file)), file);
+    }
+  });
+});
+
 describe('Technical pages', () => {
   test('are excluded from pages lists', () => {
     const list = read('index.html').match(/<ul id="pages">(.*?)<\/ul>/s)[1];
@@ -81,7 +116,9 @@ describe('Service worker', () => {
     const req = typeof input === 'string' ? new Request(new URL(input, BASE)) : input;
     net.calls.push(req.method + ' ' + req.url);
     if (!net.online) throw new TypeError('Failed to fetch');
-    const body = net.files[req.url];
+    // every local URL exists (precached pages, etc.), unless its content is set
+    const local = new URL(req.url).origin === ORIGIN;
+    const body = net.files[req.url] ?? (local ? 'content of ' + req.url : undefined);
     const res = new Response(body ?? 'not found', { status: body === undefined ? 404 : 200 });
     Object.defineProperty(res, 'type', { value: new URL(req.url).origin === ORIGIN ? 'basic' : 'opaque' });
     return res;
@@ -175,8 +212,17 @@ describe('Service worker', () => {
 
   test('install precaches pages and the offline page of every language', async () => {
     assert.equal(store.size, 1);
-    const cache = [...store.values()][0];
-    assert.deepEqual([...cache.map.keys()].sort(), [BASE, BASE + 'fr/offline.html', BASE + 'offline.html']);
+    const urls = [...[...store.values()][0].map.keys()];
+    for (const url of [BASE, BASE + 'fr/', BASE + 'about/', BASE + 'offline.html', BASE + 'fr/offline.html']) {
+      assert.ok(urls.includes(url), `${url} is precached`);
+    }
+  });
+
+  test('install does not precache excluded pages (`pwa.precache` and 2.x `serviceworker.precache`)', async () => {
+    const urls = [...[...store.values()][0].map.keys()];
+    for (const url of [BASE + 'private/', BASE + 'legacy/', BASE + 'serviceworker.js']) {
+      assert.ok(!urls.includes(url), `${url} is not precached`);
+    }
   });
 
   test('pages (network-first): fresh content when online, and the cache is updated', async () => {
@@ -195,9 +241,9 @@ describe('Service worker', () => {
   test('pages (cache-first): cached page served, uncached page fetched', async () => {
     const swCacheFirst = loadSW({ strategy: 'cache-first' });
     net.files[BASE] = 'home v2';
-    net.files[BASE + 'about/'] = 'about';
+    net.files[BASE + 'private/'] = 'private';
     assert.equal((await request(swCacheFirst, BASE, { page: true })).text, 'home v1');
-    assert.equal((await request(swCacheFirst, BASE + 'about/', { page: true })).text, 'about');
+    assert.equal((await request(swCacheFirst, BASE + 'private/', { page: true })).text, 'private');
   });
 
   test('assets (stale-while-revalidate): cached copy served, then refreshed', async () => {

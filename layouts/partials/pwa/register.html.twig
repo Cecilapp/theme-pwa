@@ -1,12 +1,12 @@
     {#- snackbar ~#}
-    {%- if site.serviceworker.update.snackbar|default(false) or site.serviceworker.offline.snackbar|default(false) ~%}
+    {%- if sw.update.snackbar|default(false) or sw.offline.snackbar|default(false) ~%}
     {{ include('partials/pwa/snackbar.html.twig', {site}, with_context = false) }}
     {%- endif ~%}
     {#- service worker registration ~#}
     <script>{% apply minify_js ~%}
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          {%- if site.serviceworker is defined and site.serviceworker.enabled ~%}
+          {%- if sw.enabled ?? false ~%}
           // register service worker (default scope: the directory of the script, i.e. the base URL)
           navigator.serviceWorker
             .register('{{ url(site.page('serviceworker'), {canonical: true})|e('js') }}')
@@ -27,13 +27,13 @@
                       {%- if site.debug|default(false) ~%}
                       console.log('[SW] New version is available.');
                       {%- endif ~%}
-                      {%- if site.serviceworker.update.snackbar|default(false) ~%}
+                      {%- if sw.update.snackbar|default(false) ~%}
                       // snackbar
                       pwaSnackbar.show('{{ "New version is available, please reload"|trans|e('js') }}', {
                         action: { label: '{{ "Reload"|trans|e('js') }}', callback: () => window.location.reload() }
                       });
                       {%- endif ~%}
-                      {%- if site.serviceworker.update.badge|default(false) ~%}
+                      {%- if sw.update.badge|default(false) ~%}
                       // badge
                       if (navigator.setAppBadge) {
                         navigator.setAppBadge();
@@ -42,17 +42,20 @@
                         }, 3000);
                       }
                       {%- endif ~%}
-                      {%- if site.serviceworker.update.notification|default(false) ~%}
+                      {%- if sw.update.notification|default(false) ~%}
                       // notification
                       {%- if site.debug|default(false) ~%}
                       console.log('[SW] Notification enabled');
                       {%- endif ~%}
                       {%- set notification_icon = '' %}
-                      {%- if site.manifest.icons|default([])|length > 0 %}
-                        {%- set first_icon = site.manifest.icons|first %}
+                      {%- if manifest.icons|default([])|length > 0 %}
+                        {%- set first_icon = manifest.icons|first %}
                         {%- set notification_icon = asset(first_icon is iterable ? first_icon.src : first_icon)|url %}
                       {%- else %}
                         {%- set icon_asset = asset('icon.png', {ignore_missing: true}) %}
+                        {%- if icon_asset.missing %}
+                          {%- set icon_asset = asset('pwa/icon.png', {ignore_missing: true}) %}
+                        {%- endif %}
                         {%- if not icon_asset.missing %}
                           {%- set notification_icon = icon_asset|resize(192)|url %}
                         {%- endif %}
@@ -84,7 +87,7 @@
               console.log('[SW]', error);
             });
           {%- endif ~%}
-          {%- if site.serviceworker is defined and not site.serviceworker.enabled ~%}
+          {%- if not (sw.enabled ?? false) ~%}
           // Service worker is disabled:
           // 1. unregister
           navigator.serviceWorker.getRegistrations().then(registrations => {
@@ -107,23 +110,23 @@
           {%- endif ~%}
         })
       }
-      {%- if not (site.serviceworker.install.prompt ?? false) ~%}
+      {%- if not (sw.install.prompt ?? false) ~%}
       // install prompt
       window.addEventListener('load', () => {
-        {%- if site.serviceworker.install.button is not empty ~%}
+        {%- if (sw.install.button ?? '') is not empty ~%}
         let installPrompt = null;
-        const installButton = document.querySelector('{{ site.serviceworker.install.button|e('js') }}');
+        const installButton = document.querySelector('{{ sw.install.button|e('js') }}');
         {%- endif ~%}
         window.addEventListener('beforeinstallprompt', (event) => {
           event.preventDefault();
-          {%- if site.serviceworker.install.button is not empty ~%}
+          {%- if (sw.install.button ?? '') is not empty ~%}
           if (installButton) {
             installPrompt = event;
             installButton.removeAttribute('hidden');
           }
           {%- endif ~%}
         });
-        {%- if site.serviceworker.install.button is not empty ~%}
+        {%- if (sw.install.button ?? '') is not empty ~%}
         if (!installButton) {
           {%- if site.debug|default(false) ~%}
           console.log('[SW] Install button not found');
@@ -153,7 +156,7 @@
         {%- endif ~%}
       })
       {%- endif ~%}
-      {%- if site.serviceworker is defined and site.debug|default(false) ~%}
+      {%- if site.debug|default(false) ~%}
       // cache storage usage
       if ('webkitTemporaryStorage' in navigator && 'queryUsageAndQuota' in navigator.webkitTemporaryStorage) {
         navigator.webkitTemporaryStorage.queryUsageAndQuota(
@@ -167,12 +170,12 @@
       // offline?
       window.addEventListener('offline', () => {
         console.log('Network connection lost.');
-        {%- if site.serviceworker.offline.snackbar|default(false) ~%}
+        {%- if sw.offline.snackbar|default(false) ~%}
         // snackbar, displayed until the connection is back
         pwaSnackbar.show('{{ "You are offline"|trans|e('js') }}', { persistent: true });
         {%- endif ~%}
       });
-      {%- if site.serviceworker.offline.snackbar|default(false) ~%}
+      {%- if sw.offline.snackbar|default(false) ~%}
       window.addEventListener('online', () => {
         pwaSnackbar.hide();
       });

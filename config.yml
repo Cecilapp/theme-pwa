@@ -8,45 +8,47 @@ pages:
       layout: serviceworker
       output: js
       multilingual: false
-      serviceworker:
+      pwa:
         precache: false
     offline:
       path: offline
       layout: offline
       output: html
       uglyurl: true
-manifest:
-  background_color: '#FFFFFF'
-  theme_color: '#202020'
-  #icons:
-  #  - icon-192x192.png
-  #  - icon-512x512.png
-  #  - src: icon-192x192-maskable.png
-  #    purpose: maskable
-  #  - src: icon-512x512-maskable.png
-  #    purpose: maskable
-  shortcuts: false
-  #screenshots:
-  #  - screenshots/desktop.png
-  #  - screenshots/mobile.png
-serviceworker:
-  enabled: false
-  install:
-    prompt: true # show install prompt
-    button: #'#install-button' # install button query selector
-    precache:
-      icons: true # precache icons
-      pages:
-        limit: false # number or false
-      #assets:
-      #  - images/example.png # relative path
-  cache:
-    strategy: network-first # pages (HTML) strategy: 'network-first' or 'cache-first'
-    request: reload # 'reload' or 'default'
-  update:
-    snackbar: false # show Snackbar message
-    badge: false # set badge on the icon
-    notification: false # show notification
-  offline:
-    page: offline # offline page ID
-    snackbar: false # show Snackbar message
+pwa:
+  manifest:
+    background_color: '#FFFFFF'
+    theme_color: '#202020'
+    #theme_color_dark: '#000000'
+    #icons:
+    #  - icon-192x192.png
+    #  - icon-512x512.png
+    #  - src: icon-192x192-maskable.png
+    #    purpose: maskable
+    #  - src: icon-512x512-maskable.png
+    #    purpose: maskable
+    shortcuts: false
+    #screenshots:
+    #  - screenshots/desktop.png
+    #  - screenshots/mobile.png
+  serviceworker:
+    enabled: false
+    install:
+      prompt: true # show install prompt
+      button: '' # install button query selector (e.g. '#install-button'), used when `prompt` is false
+      precache:
+        icons: true # precache icons
+        pages:
+          limit: false # number or false
+        #assets:
+        #  - images/example.png # relative path
+    cache:
+      strategy: network-first # pages (HTML) strategy: 'network-first' or 'cache-first'
+      request: reload # 'reload' or 'default'
+    update:
+      snackbar: false # show Snackbar message
+      badge: false # set badge on the icon
+      notification: false # show notification
+    offline:
+      page: offline # offline page ID
+      snackbar: false # show Snackbar message

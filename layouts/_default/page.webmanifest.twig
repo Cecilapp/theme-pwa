@@ -1,7 +1,9 @@
+{#- options (`manifest` at the root of the configuration is deprecated since 3.0) #}
+{%- set manifest = (site.pwa.manifest ?? {})|merge(site.manifest ?? {}) %}
 {#- icons #}
 {%- set icons = [] %}
-{%- if site.manifest.icons|default([])|length > 0 %}
-  {%- for icon in site.manifest.icons %}
+{%- if manifest.icons|default([])|length > 0 %}
+  {%- for icon in manifest.icons %}
     {#- icon with options #}
     {%- if icon is iterable %}
       {%- set icon_asset = asset(icon.src) %}
@@ -22,8 +24,11 @@
     {%- endif %}
   {%- endfor %}
 {%- else %}
-  {#- creates icons from `icon.png` if exists #}
+  {#- creates icons from the website `icon.png` file, or from the theme one #}
   {%- set icon_asset = asset('icon.png', {ignore_missing: true}) %}
+  {%- if icon_asset.missing %}
+    {%- set icon_asset = asset('pwa/icon.png', {ignore_missing: true}) %}
+  {%- endif %}
   {%- if not icon_asset.missing %}
     {%- for purpose in ['any', 'maskable'] %}
       {%- for size in [192, 512] %}
@@ -43,7 +48,7 @@
 {%- endif %}
 {#- screenshots #}
 {%- set screenshots = [] %}
-{%- for screenshot in site.manifest.screenshots|default([]) %}
+{%- for screenshot in manifest.screenshots|default([]) %}
   {%- set screenshot_asset = asset(screenshot) %}
   {%- set screenshots = screenshots|merge([{
     src: screenshot_asset|url,
@@ -54,8 +59,12 @@
 {%- endfor %}
 {#- shortcuts #}
 {%- set shortcuts = [] %}
-{%- if site.manifest.shortcuts|default(false) and site.menus.main|length > 0 %}
-  {%- set shortcut_icon = asset('icon-link.png') %}
+{%- if manifest.shortcuts|default(false) and site.menus.main|length > 0 %}
+  {#- website `icon-link.png` file, or the theme one #}
+  {%- set shortcut_icon = asset('icon-link.png', {ignore_missing: true}) %}
+  {%- if shortcut_icon.missing %}
+    {%- set shortcut_icon = asset('pwa/icon-link.png') %}
+  {%- endif %}
   {%- for item in site.menus.main|filter(i => 'http' not in i.url)|sort_by_weight %}
     {%- set shortcuts = shortcuts|merge([{
       name: item.name,
@@ -85,26 +94,26 @@
   {%- endif %}
 {%- endif %}
 {#- main #}
-{%- set display_override = site.manifest.display_override|default('standalone') %}
-{%- set manifest = {
-  name: site.manifest.name|default(site.title),
-  short_name: site.manifest.short_name|default(short_name),
-  description: site.manifest.description|default(site.description|default('')),
+{%- set display_override = manifest.display_override|default('standalone') %}
+{%- set webmanifest = {
+  name: manifest.name|default(site.title),
+  short_name: manifest.short_name|default(short_name),
+  description: manifest.description|default(site.description|default('')),
   display_override: display_override is iterable ? display_override : [display_override],
-  display: site.manifest.display|default('standalone'),
-  start_url: site.manifest.start_url|default(url(site.home, {canonical: true})),
-  id: site.manifest.id|default(url(site.home, {canonical: true})),
-  orientation: site.manifest.orientation|default('any'),
-  background_color: site.manifest.background_color|default('#FFFFFF'),
-  theme_color: site.manifest.theme_color|default('#202020'),
+  display: manifest.display|default('standalone'),
+  start_url: manifest.start_url|default(url(site.home, {canonical: true})),
+  id: manifest.id|default(url(site.home, {canonical: true})),
+  orientation: manifest.orientation|default('any'),
+  background_color: manifest.background_color|default('#FFFFFF'),
+  theme_color: manifest.theme_color|default('#202020'),
   lang: site.language|default('en') ~ '',
-  dir: site.manifest.dir|default('ltr'),
+  dir: manifest.dir|default('ltr'),
   icons: icons,
 } %}
 {%- if screenshots|length > 0 %}
-  {%- set manifest = manifest|merge({screenshots: screenshots}) %}
+  {%- set webmanifest = webmanifest|merge({screenshots: screenshots}) %}
 {%- endif %}
 {%- if shortcuts|length > 0 %}
-  {%- set manifest = manifest|merge({shortcuts: shortcuts}) %}
+  {%- set webmanifest = webmanifest|merge({shortcuts: shortcuts}) %}
 {%- endif %}
-{{- manifest|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))|raw -}}
+{{- webmanifest|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))|raw -}}
