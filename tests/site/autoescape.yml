@@ -1,6 +1,3 @@
 # Extension-based autoescape strategy (built in `_site-autoescape`)
 layouts:
   autoescape: null
-# compiled templates are cached regardless of the autoescape option
-cache:
-  templates: false
