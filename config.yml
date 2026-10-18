@@ -41,6 +41,7 @@ serviceworker:
       #assets:
       #  - images/example.png # relative path
   cache:
+    strategy: network-first # pages (HTML) strategy: 'network-first' or 'cache-first'
     request: reload # 'reload' or 'default'
   update:
     snackbar: false # show Snackbar message

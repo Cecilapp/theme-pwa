@@ -62,7 +62,12 @@ self.addEventListener('install', function(event) {
       {%- if site.debug|default(false) ~%}
       console.log(`[SW] Create cache storage "${CACHE}"`);
       {%- endif ~%}
-      return Promise.allSettled(precache.map(function (path) {
+      return Promise.allSettled(precache.map(async function (path) {
+        // reuses the response stored by a previous version, if any (refreshed later by the fetch strategies)
+        const cached = await caches.match(path);
+        if (cached) {
+          return cache.put(path, cached);
+        }
         {%- if site.debug|default(false) ~%}
         console.log('[SW] Precache', path);
         {%- endif ~%}
@@ -95,6 +100,100 @@ self.addEventListener('activate', function(event) {
   event.waitUntil(activate());
 });
 
+// pages (HTML) strategy: 'network-first' or 'cache-first'
+var PAGES_STRATEGY = '{{ site.serviceworker.cache.strategy|default('network-first')|e('js') }}';
+
+// is it a page request?
+function isPage(request) {
+  return request.mode === 'navigate' || request.headers.get('Accept')?.includes('text/html');
+}
+
+// stores a valid response in the cache
+function putInCache(event, response) {
+  if (!response || response.status !== 200 || response.type !== 'basic') {
+    return;
+  }
+  {%- if site.debug|default(false) ~%}
+  console.log('[SW] Put to cache', event.request.url);
+  {%- endif ~%}
+  const responseToCache = response.clone();
+  event.waitUntil(caches.open(CACHE).then(cache => cache.put(event.request, responseToCache)));
+}
+
+// offline fallback: offline page (of the current language) or image placeholder
+async function offlineFallback(request) {
+  if (isPage(request)) {
+    const url = new URL(request.url);
+    const offline = OFFLINE_PAGES.find(page => url.pathname.startsWith(page.prefix));
+    if (offline !== undefined) {
+      const response = await caches.match(offline.url);
+      if (response) {
+        return response;
+      }
+    }
+  }
+  if (request.destination === 'image') {
+    return new Response('<svg role="img" aria-labelledby="offline-title" viewBox="-102.4 -102.4 716.80 716.80" xmlns="http://www.w3.org/2000/svg" fill="#505050" stroke="#505050"><title id="offline-title">{{ 'Offline'|trans|e('html')|e('js') }}</title><g><path d="M93.72,183.25C49.49,198.05,16,233.1,16,288c0,66,54,112,120,112H320.37" style="fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><path d="M467.82,377.74C485.24,363.3,496,341.61,496,312c0-59.82-53-85.76-96-88-8.89-89.54-71-144-144-144-26.16,0-48.79,6.93-67.6,18.14" style="fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><line x1="448" y1="448" x2="64" y2="64" style="fill:none;stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"></line></g></svg>', { headers: { 'Content-Type': 'image/svg+xml' } });
+  }
+  return Response.error();
+}
+
+// network first, then cache, then offline fallback
+async function networkFirst(event) {
+  try {
+    const response = await fetch(event.request);
+    putInCache(event, response);
+    return response;
+  } catch (error) {
+    const cached = await caches.match(event.request);
+    {%- if site.debug|default(false) ~%}
+    if (cached) {
+      console.log('[SW] Response from cache (offline)', event.request.url);
+    }
+    {%- endif ~%}
+    return cached || offlineFallback(event.request);
+  }
+}
+
+// cache first, then network, then offline fallback
+async function cacheFirst(event) {
+  const cached = await caches.match(event.request);
+  if (cached) {
+    {%- if site.debug|default(false) ~%}
+    console.log('[SW] Response from cache', event.request.url);
+    {%- endif ~%}
+    return cached;
+  }
+  try {
+    const response = await fetch(event.request);
+    putInCache(event, response);
+    return response;
+  } catch (error) {
+    return offlineFallback(event.request);
+  }
+}
+
+// cache first and refresh the cache in the background, or network then offline fallback
+async function staleWhileRevalidate(event) {
+  const cached = await caches.match(event.request);
+  const network = fetch(event.request).then(response => {
+    putInCache(event, response);
+    return response;
+  });
+  if (cached) {
+    {%- if site.debug|default(false) ~%}
+    console.log('[SW] Response from cache (revalidating)', event.request.url);
+    {%- endif ~%}
+    event.waitUntil(network.catch(() => {}));
+    return cached;
+  }
+  try {
+    return await network;
+  } catch (error) {
+    return offlineFallback(event.request);
+  }
+}
+
 // fetch
 self.addEventListener('fetch', function(event) {
   const url = new URL(event.request.url);
@@ -103,8 +202,12 @@ self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') {
     return;
   }
+  // ...not HTTP requests (ie "data:", "chrome-extension:", etc.)
+  if (!url.protocol.startsWith('http')) {
+    return;
+  }
   // ...not local resources, except images
-  if (!(url.origin == location.origin) && event.request.destination !== 'image') {
+  if (url.origin !== location.origin && event.request.destination !== 'image') {
     return;
   }
   // ...Cecil's watcher
@@ -122,51 +225,18 @@ self.addEventListener('fetch', function(event) {
   {%- if site.debug|default(false) ~%}
   console.log('[SW] Fetch', event.request.url);
   {%- endif ~%}
-  event.respondWith(
-    // cache before
-    caches.match(event.request).then(function(response) {
-      if (response) {
-        {%- if site.debug|default(false) ~%}
-        console.log('[SW] Response from cache', event.request.url);
-        {%- endif ~%}
-        return response;
-      }
-      // put visited ressource to cache
-      var fetchRequest = event.request.clone();
-      return fetch(fetchRequest).then(function(response) {
-        // ignore not valid response
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
-        }
-        var responseToCache = response.clone();
-        caches.open(CACHE).then(function(cache) {
-          // ignore not HTTP (ie "data:", "chrome-extension:", etc.)
-          if (!event.request.url.startsWith('http')) {
-            return;
-          }
-          {%- if site.debug|default(false) ~%}
-          console.log('[SW] Put to cache', event.request.url);
-          {%- endif ~%}
-          cache.put(new Request(event.request, { cache: '{{ site.serviceworker.cache.request|default('reload')|e('js') }}' }), responseToCache);
-        });
-        return response;
-      })
-      .catch(function(response) {
-        // offline page (of the current language)
-        if (event.request.mode === 'navigate' || event.request.headers.get('Accept')?.includes('text/html')) {
-          const offline = OFFLINE_PAGES.find(page => url.pathname.startsWith(page.prefix));
-          if (offline !== undefined) {
-            return caches.match(offline.url).then(response => response || Response.error());
-          }
-        }
-        // offline image
-        if (event.request.destination === 'image') {
-          return new Response('<svg role="img" aria-labelledby="offline-title" viewBox="-102.4 -102.4 716.80 716.80" xmlns="http://www.w3.org/2000/svg" fill="#505050" stroke="#505050"><title id="offline-title">{{ 'Offline'|trans|e('html')|e('js') }}</title><g><path d="M93.72,183.25C49.49,198.05,16,233.1,16,288c0,66,54,112,120,112H320.37" style="fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><path d="M467.82,377.74C485.24,363.3,496,341.61,496,312c0-59.82-53-85.76-96-88-8.89-89.54-71-144-144-144-26.16,0-48.79,6.93-67.6,18.14" style="fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><line x1="448" y1="448" x2="64" y2="64" style="fill:none;stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"></line></g></svg>', { headers: { 'Content-Type': 'image/svg+xml' } });
-        }
-        return Response.error();
-      });
-    })
-  );
+  // cross-origin images: network only (opaque responses are not cached), placeholder when offline
+  if (url.origin !== location.origin) {
+    event.respondWith(fetch(event.request).catch(() => offlineFallback(event.request)));
+    return;
+  }
+  // pages
+  if (isPage(event.request)) {
+    event.respondWith(PAGES_STRATEGY === 'cache-first' ? cacheFirst(event) : networkFirst(event));
+    return;
+  }
+  // assets
+  event.respondWith(staleWhileRevalidate(event));
 });
 
 {%- if site.serviceworker.update.notification|default(false) ~%}

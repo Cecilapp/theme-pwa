@@ -8,7 +8,7 @@ The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to imp
 
 - Generated and configurable **Web manifest**
 - Generated and configurable **service worker**
-- **Automatic caching** of visited resources
+- **Automatic caching** of visited resources: network-first for pages, stale-while-revalidate for assets
 - **No dependencies**, vanilla JavaScript
 - **Precaching** of icons, assets and published pages
 - **Offline support**: fallback page and image placeholder
@@ -197,7 +197,22 @@ serviceworker:
       path: '/admin'
 ```
 
-Set the [cache mode](https://developer.mozilla.org/docs/Web/API/Request/cache) of requests stored by the service worker (`reload` by default, or `default`):
+Set the caching strategy of pages (HTML):
+
+- `network-first` (default): pages are always fetched from the network when online, the cached copy is used when offline
+- `cache-first`: pages are served from the cache when available, faster but possibly outdated until the next service worker update
+
+```yaml
+serviceworker:
+  cache:
+    strategy: cache-first
+```
+
+> [!NOTE]
+> Other resources (CSS, JavaScript, images, etc.) are served from the cache and refreshed in the background (_stale-while-revalidate_). Cross-origin images are not cached, but replaced by a placeholder when offline.  
+> When the website is updated, the new service worker reuses the responses already cached instead of downloading all precached files again.
+
+Set the [cache mode](https://developer.mozilla.org/docs/Web/API/Request/cache) of precache requests (`reload` by default, or `default`):
 
 ```yaml
 serviceworker:
@@ -244,6 +259,16 @@ When `debug: true` is set in the site configuration, the service worker logs its
 ### Translations
 
 Messages (snackbar, notification and offline page) are translatable. A French translation is included; add your own in the `translations` directory of your website (e.g.: `messages.de.yml`).
+
+## Tests
+
+The `tests/site` website is built with the theme, then the generated files are tested with Node.js (the service worker runs with a simulated cache and network):
+
+```bash
+php tests/link.php
+php cecil.phar build tests/site
+node --test tests/pwa.test.mjs
+```
 
 ## License
 
