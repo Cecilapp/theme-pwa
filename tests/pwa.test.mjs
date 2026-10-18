@@ -92,7 +92,9 @@ describe('Service worker', () => {
     const req = typeof input === 'string' ? new Request(new URL(input, BASE)) : input;
     net.calls.push(req.method + ' ' + req.url);
     if (!net.online) throw new TypeError('Failed to fetch');
-    const body = net.files[req.url];
+    // every local URL exists (precached pages, etc.), unless its content is set
+    const local = new URL(req.url).origin === ORIGIN;
+    const body = net.files[req.url] ?? (local ? 'content of ' + req.url : undefined);
     const res = new Response(body ?? 'not found', { status: body === undefined ? 404 : 200 });
     Object.defineProperty(res, 'type', { value: new URL(req.url).origin === ORIGIN ? 'basic' : 'opaque' });
     return res;
@@ -186,8 +188,17 @@ describe('Service worker', () => {
 
   test('install precaches pages and the offline page of every language', async () => {
     assert.equal(store.size, 1);
-    const cache = [...store.values()][0];
-    assert.deepEqual([...cache.map.keys()].sort(), [BASE, BASE + 'fr/offline.html', BASE + 'offline.html']);
+    const urls = [...[...store.values()][0].map.keys()];
+    for (const url of [BASE, BASE + 'fr/', BASE + 'about/', BASE + 'offline.html', BASE + 'fr/offline.html']) {
+      assert.ok(urls.includes(url), `${url} is precached`);
+    }
+  });
+
+  test('install does not precache excluded pages (`pwa.precache` and 2.x `serviceworker.precache`)', async () => {
+    const urls = [...[...store.values()][0].map.keys()];
+    for (const url of [BASE + 'private/', BASE + 'legacy/', BASE + 'serviceworker.js']) {
+      assert.ok(!urls.includes(url), `${url} is not precached`);
+    }
   });
 
   test('pages (network-first): fresh content when online, and the cache is updated', async () => {
@@ -206,9 +217,9 @@ describe('Service worker', () => {
   test('pages (cache-first): cached page served, uncached page fetched', async () => {
     const swCacheFirst = loadSW({ strategy: 'cache-first' });
     net.files[BASE] = 'home v2';
-    net.files[BASE + 'about/'] = 'about';
+    net.files[BASE + 'private/'] = 'private';
     assert.equal((await request(swCacheFirst, BASE, { page: true })).text, 'home v1');
-    assert.equal((await request(swCacheFirst, BASE + 'about/', { page: true })).text, 'about');
+    assert.equal((await request(swCacheFirst, BASE + 'private/', { page: true })).text, 'private');
   });
 
   test('assets (stale-while-revalidate): cached copy served, then refreshed', async () => {

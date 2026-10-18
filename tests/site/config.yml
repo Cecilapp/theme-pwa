@@ -28,9 +28,6 @@ pwa:
     install:
       prompt: false
       button: '#install-button'
-      precache:
-        pages:
-          limit: 1
     update:
       snackbar: true
       notification: true

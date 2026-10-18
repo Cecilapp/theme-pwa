@@ -37,7 +37,7 @@ precache.push('{{ asset(icon)|url({canonical: false})|e('js') }}');
   {%- endfor ~%}
 {% endif %}
 // pages
-{% set pages_to_precache = site.allpages|filter(p => p.published == true and p.redirect is not defined and (p.serviceworker.precache ?? true) != false)|sort((a, b) => a.path > b.path) %}
+{% set pages_to_precache = site.allpages|filter(p => p.published == true and p.redirect is not defined and (p.pwa.precache ?? p.serviceworker.precache ?? true) != false)|sort((a, b) => a.path > b.path) %}
 {% for page in pages_to_precache|slice(0, (sw.install.precache.pages.limit ?? false) == false ? pages_to_precache|length : sw.install.precache.pages.limit) %}
 precache.push('{{ url(page, {canonical: false})|e('js') }}');
 {% endfor %}
