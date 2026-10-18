@@ -1,3 +1,7 @@
+    {#- snackbar ~#}
+    {%- if site.serviceworker.update.snackbar|default(false) or site.serviceworker.offline.snackbar|default(false) ~%}
+    {{ include('partials/pwa/snackbar.html.twig', {site}, with_context = false) }}
+    {%- endif ~%}
     {#- service worker registration ~#}
     <script>{% apply minify_js ~%}
       if ('serviceWorker' in navigator) {
@@ -25,7 +29,9 @@
                       {%- endif ~%}
                       {%- if site.serviceworker.update.snackbar|default(false) ~%}
                       // snackbar
-                      showSnackbar('{{ "New version is available, please reload"|trans|e('js') }}');
+                      pwaSnackbar.show('{{ "New version is available, please reload"|trans|e('js') }}', {
+                        action: { label: '{{ "Reload"|trans|e('js') }}', callback: () => window.location.reload() }
+                      });
                       {%- endif ~%}
                       {%- if site.serviceworker.update.badge|default(false) ~%}
                       // badge
@@ -162,67 +168,13 @@
       window.addEventListener('offline', () => {
         console.log('Network connection lost.');
         {%- if site.serviceworker.offline.snackbar|default(false) ~%}
-        // snackbar
-        showSnackbar('{{ "You are offline"|trans|e('js') }}');
+        // snackbar, displayed until the connection is back
+        pwaSnackbar.show('{{ "You are offline"|trans|e('js') }}', { persistent: true });
         {%- endif ~%}
       });
-    {% endapply %}</script>
-    {#- snackbar element ~#}
-    <style>{% apply minify_css ~%}
-      #snackbar {
-        visibility: hidden;
-        min-width: 250px;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        border-radius: 4px;
-        padding: 8px 16px;
-        position: fixed;
-        z-index: 999;
-        left: 50%;
-        transform: translate(-50%);
-        bottom: 20px;
-        font-size: 16px;
-      }
-      #snackbar.show {
-        visibility: visible;
-        -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        animation: fadein 0.5s, fadeout 0.5s 2.5s;
-      }
-      @-webkit-keyframes fadein {
-        from {opacity: 0;}
-        to {opacity: 1;}
-      }
-      @keyframes fadein {
-        from {opacity: 0;}
-        to {opacity: 1;}
-      }
-      @-webkit-keyframes fadeout {
-        from {opacity: 1;}
-        to {opacity: 0;}
-      }
-      @keyframes fadeout {
-        from {opacity: 1;}
-        to {opacity: 0;}
-      }
-    {% endapply %}</style>
-    <script>{% apply minify_js ~%}
-      // add `<div id="snackbar"></div>` in body
-      function addSnackbar() {
-        const snackbar = document.createElement('div');
-        snackbar.setAttribute('id', 'snackbar');
-        document.body.appendChild(snackbar);
-      }
-      // show snackbar div
-      function showSnackbar(message) {
-        var snackbar = document.getElementById('snackbar');
-        snackbar.className = 'show';
-        snackbar.textContent = message;
-        setTimeout(() => {
-          snackbar.className = snackbar.className.replace('show', '');
-        }, 3000);
-      }
-      addEventListener('load', () => {
-        addSnackbar();
+      {%- if site.serviceworker.offline.snackbar|default(false) ~%}
+      window.addEventListener('online', () => {
+        pwaSnackbar.hide();
       });
+      {%- endif ~%}
     {% endapply %}</script>

@@ -1,0 +1,140 @@
+    {#- snackbar: styles and `pwaSnackbar` API ~#}
+    <style>{% apply minify_css ~%}
+      :where(:root) {
+        --pwa-snackbar-background: #323232;
+        --pwa-snackbar-color: #ffffff;
+        --pwa-snackbar-action-color: #8ab4f8;
+      }
+      @media (prefers-color-scheme: dark) {
+        :where(:root) {
+          --pwa-snackbar-background: #e8e8e8;
+          --pwa-snackbar-color: #202020;
+          --pwa-snackbar-action-color: #1a5fb4;
+        }
+      }
+      :where([data-theme="dark"]) {
+        --pwa-snackbar-background: #e8e8e8;
+        --pwa-snackbar-color: #202020;
+        --pwa-snackbar-action-color: #1a5fb4;
+      }
+      :where([data-theme="light"]) {
+        --pwa-snackbar-background: #323232;
+        --pwa-snackbar-color: #ffffff;
+        --pwa-snackbar-action-color: #8ab4f8;
+      }
+      .pwa-snackbar {
+        position: fixed;
+        z-index: 999;
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-sizing: border-box;
+        min-width: 250px;
+        max-width: calc(100% - 32px);
+        padding: 8px 8px 8px 16px;
+        border-radius: 4px;
+        background-color: var(--pwa-snackbar-background);
+        color: var(--pwa-snackbar-color);
+        font-size: 16px;
+        line-height: 1.4;
+        box-shadow: 0 3px 5px -1px rgba(0, 0, 0, .2), 0 6px 10px rgba(0, 0, 0, .14);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .3s, visibility .3s;
+      }
+      .pwa-snackbar.is-visible {
+        opacity: 1;
+        visibility: visible;
+      }
+      .pwa-snackbar-message {
+        flex: 1;
+        padding: 6px 0;
+      }
+      .pwa-snackbar button {
+        flex: none;
+        margin: 0;
+        padding: 6px 8px;
+        border: 0;
+        border-radius: 4px;
+        background: none;
+        color: var(--pwa-snackbar-action-color);
+        font: inherit;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .pwa-snackbar .pwa-snackbar-close {
+        color: inherit;
+        font-weight: normal;
+      }
+      .pwa-snackbar button:focus-visible {
+        outline: 2px solid currentColor;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .pwa-snackbar {
+          transition: none;
+        }
+      }
+    {% endapply %}</style>
+    <script>{% apply minify_js ~%}
+      const pwaSnackbar = (() => {
+        let element = null;
+        let timer = null;
+        // creates the (empty) live region as soon as possible, so that screen readers announce its messages
+        function init() {
+          if (element) {
+            return element;
+          }
+          element = document.createElement('div');
+          element.id = 'snackbar';
+          element.className = 'pwa-snackbar';
+          element.setAttribute('role', 'status');
+          element.setAttribute('aria-live', 'polite');
+          document.body.appendChild(element);
+          return element;
+        }
+        if (document.body) {
+          init();
+        } else {
+          document.addEventListener('DOMContentLoaded', init);
+        }
+        function hide() {
+          clearTimeout(timer);
+          init().classList.remove('is-visible');
+        }
+        // options: `action` ({label, callback}), `persistent` (not hidden automatically), `duration` (ms)
+        function show(message, options = {}) {
+          const snackbar = init();
+          clearTimeout(timer);
+          const text = document.createElement('span');
+          text.className = 'pwa-snackbar-message';
+          text.textContent = message;
+          snackbar.replaceChildren(text);
+          if (options.action) {
+            const action = document.createElement('button');
+            action.type = 'button';
+            action.textContent = options.action.label;
+            action.addEventListener('click', () => {
+              hide();
+              options.action.callback();
+            });
+            snackbar.append(action);
+          }
+          if (options.action || options.persistent) {
+            const close = document.createElement('button');
+            close.type = 'button';
+            close.className = 'pwa-snackbar-close';
+            close.setAttribute('aria-label', '{{ 'Close'|trans|e('js') }}');
+            close.textContent = '✕';
+            close.addEventListener('click', hide);
+            snackbar.append(close);
+          } else {
+            timer = setTimeout(hide, options.duration ?? 4000);
+          }
+          snackbar.classList.add('is-visible');
+        }
+        return { show, hide };
+      })();
+    {% endapply %}</script>

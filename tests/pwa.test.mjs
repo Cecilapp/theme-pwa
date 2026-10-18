@@ -19,6 +19,7 @@ describe('Web manifest', () => {
     test(`${file} is valid JSON`, () => {
       const manifest = JSON.parse(read(file));
       assert.equal(manifest.name, 'L\'atelier "test" & co');
+      assert.equal(manifest.short_name, 'L\'atelier');
       assert.equal(manifest.lang, file.startsWith('fr') ? 'fr' : 'en');
       assert.deepEqual(manifest.display_override, ['window-controls-overlay', 'standalone']);
       assert.equal(manifest.icons.length, 4);
@@ -42,6 +43,27 @@ describe('Inline scripts', () => {
 
   test('the service worker is registered without a hardcoded scope', () => {
     assert.match(read('index.html'), /\.register\('[^']*serviceworker\.js'\)/);
+  });
+
+  test('the snackbar is an accessible live region with a reload action', () => {
+    const html = read('index.html');
+    assert.match(html, /\.pwa-snackbar\{/);
+    assert.match(html, /setAttribute\(.role.,.status.\)/);
+    assert.match(html, /callback:\(\)=>window\.location\.reload\(\)/);
+  });
+});
+
+describe('Technical pages', () => {
+  test('are excluded from pages lists', () => {
+    const list = read('index.html').match(/<ul id="pages">(.*?)<\/ul>/s)[1];
+    assert.match(list, /<li>about<\/li>/);
+    assert.doesNotMatch(list, /offline|manifest|serviceworker/);
+  });
+
+  test('the offline page uses the manifest colors and links to the home page', () => {
+    const html = read('fr/offline.html');
+    assert.match(html, /--pwa-offline-accent: #202020;/);
+    assert.match(html, /<a href="\/my-repo\/fr\/">Aller à la page d'accueil<\/a>/);
   });
 });
 

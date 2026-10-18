@@ -1,32 +1,91 @@
-{#- source: https://web.dev/articles/offline-fallback-page?hl=fr -#}
+{#- source: https://web.dev/articles/offline-fallback-page -#}
+{%- set background_color = site.manifest.background_color|default('#FFFFFF') %}
+{%- set theme_color = site.manifest.theme_color|default('#202020') %}
 <!DOCTYPE html>
 <html lang="{{ site.language }}">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% trans %}You are offline{% endtrans %}</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="robots" content="noindex">
+    <title>{% trans %}You are offline{% endtrans %} - {{ site.title }}</title>
     <style>
+      :root {
+        --pwa-offline-background: {{ background_color }};
+        --pwa-offline-color: #202020;
+        --pwa-offline-accent: {{ theme_color }};
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --pwa-offline-background: Canvas;
+          --pwa-offline-color: CanvasText;
+          --pwa-offline-accent: {{ site.manifest.theme_color_dark|default('CanvasText') }};
+        }
+      }
       body {
-        font-family: helvetica, arial, sans-serif;
-        margin: 2em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 1rem;
+        box-sizing: border-box;
+        background-color: var(--pwa-offline-background);
+        color: var(--pwa-offline-color);
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, helvetica, arial, sans-serif;
+        line-height: 1.5;
+        text-align: center;
+      }
+      main {
+        max-width: 32rem;
+      }
+      svg {
+        width: 4rem;
+        height: 4rem;
+        color: var(--pwa-offline-accent);
       }
       h1 {
-        font-style: italic;
-        color: #373fff;
+        margin-block: .5rem 1rem;
+        color: var(--pwa-offline-accent);
       }
       p {
         margin-block: 1rem;
       }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+      }
       button {
-        display: block;
+        padding: .5rem 1rem;
+        border: 2px solid var(--pwa-offline-accent);
+        border-radius: 4px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+      a {
+        color: inherit;
+      }
+      button:focus-visible, a:focus-visible {
+        outline: 2px solid var(--pwa-offline-accent);
+        outline-offset: 2px;
       }
     </style>
   </head>
   <body>
-    <h1>{% trans %}You are offline{% endtrans %}</h1>
-    <p>{% trans %}Click the button below to try reloading.{% endtrans %}</p>
-    <button type="button">⤾ {% trans %}Reload{% endtrans %}</button>
+    <main>
+      <svg aria-hidden="true" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"><path d="M93.72,183.25C49.49,198.05,16,233.1,16,288c0,66,54,112,120,112H320.37"/><path d="M467.82,377.74C485.24,363.3,496,341.61,496,312c0-59.82-53-85.76-96-88-8.89-89.54-71-144-144-144-26.16,0-48.79,6.93-67.6,18.14"/><line x1="448" y1="448" x2="64" y2="64"/></svg>
+      <h1>{% trans %}You are offline{% endtrans %}</h1>
+      <p>{% trans %}Click the button below to try reloading.{% endtrans %}</p>
+      <p class="actions">
+        <button type="button">{% trans %}Reload{% endtrans %}</button>
+        <a href="{{ url(site.home) }}">{% trans %}Go to the home page{% endtrans %}</a>
+      </p>
+    </main>
     <script>
       document.querySelector('button').addEventListener('click', () => {
         window.location.reload();

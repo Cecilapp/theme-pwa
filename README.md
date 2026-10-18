@@ -231,15 +231,40 @@ serviceworker:
 ```
 
 > [!NOTE]
-> Enabling `notification` asks the user for permission to display notifications.
+> Enabling `notification` asks the user for permission to display notifications.  
+> The update snackbar stays displayed, with a _Reload_ button, until the user reloads or closes it.
 
-Display a snackbar on connection loss:
+Display a snackbar on connection loss (hidden when the connection is back):
 
 ```yaml
 serviceworker:
   offline:
     snackbar: true
 ```
+
+#### Snackbar
+
+The snackbar is announced by screen readers (`role="status"`), follows the color scheme (`prefers-color-scheme` or `data-theme` attribute on `<html>`) and can be restyled with CSS custom properties:
+
+```css
+:root {
+  --pwa-snackbar-background: #323232;
+  --pwa-snackbar-color: #ffffff;
+  --pwa-snackbar-action-color: #8ab4f8;
+}
+```
+
+When enabled, it can also display your own messages:
+
+```js
+pwaSnackbar.show('Saved!');
+pwaSnackbar.show('Item deleted', { action: { label: 'Undo', callback: () => undo() } });
+pwaSnackbar.show('Sync in progress…', { persistent: true }); // hidden with pwaSnackbar.hide()
+```
+
+#### Offline page
+
+The default offline page uses the `background_color`, `theme_color` and `theme_color_dark` colors of the Web manifest, and links to the home page.
 
 Use a custom offline page, by its ID (`offline` by default):
 
@@ -250,7 +275,8 @@ serviceworker:
 ```
 
 > [!TIP]
-> On a multilingual website, the offline page of the current language is used.
+> On a multilingual website, the offline page of the current language is used.  
+> You can also override the default one with your own `layouts/_default/offline.html.twig` template.
 
 ### Debug
 
