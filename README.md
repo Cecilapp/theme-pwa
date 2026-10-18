@@ -129,7 +129,7 @@ serviceworker:
 ```
 
 > [!IMPORTANT]
-> The service worker is registered with the `/` scope.  
+> The service worker scope is the base URL of the website (e.g. `/` or `/my-repo/` for a site published in a subdirectory).  
 > If the service worker is disabled afterwards (`enabled: false`), it is automatically unregistered from the visitors browsers and their caches are deleted.
 
 #### Optional service worker settings

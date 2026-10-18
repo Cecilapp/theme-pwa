@@ -1,99 +1,94 @@
 {#- icons #}
-{%- macro icon(asset, purpose = '') -%}
-    {
-      "src": "{{ asset|url }}",
-      "sizes": "{{ asset.width }}x{{ asset.height }}",
-      "type": "{{ asset.subtype }}"
-      {%- if purpose %},
-      "purpose": "{{ purpose }}"
-      {%- endif ~%}
-    }
-{%- endmacro %}
-{%- set icons %}
-  {%- if site.manifest.icons|default([])|length > 0 %}
-    {%- for icon in site.manifest.icons %}
-      {#- icon with options #}
-      {%- if icon is iterable %}
-        {%- set icon_asset = asset(icon.src) -%}
-    {
-      "src": "{{ icon_asset|url }}",
-      "sizes": "{{ icon.sizes|default(icon_asset.width ~ 'x' ~ icon_asset.height) }}",
-      "type": "{{ icon.type|default(icon_asset.subtype) }}",
-      "purpose": "{{ icon.purpose|default('any') }}"
-    }
-      {#- icon file only #}
-      {%- else %}
-        {%- set icon_asset = asset(icon) -%}
-    {{- _self.icon(icon_asset) }}
-    {%- endif %}{% if loop.length > 1 and not loop.last %},{% endif %}
-    {%- endfor %}
-  {%- else %}
-    {#- creates icons from `icon.png` if exists #}
-    {%- set icon_asset = asset('icon.png', {'ignore_missing': true}) %}
-    {%- if not icon_asset.missing %}
-    {{- _self.icon(icon_asset|resize(192)) }},
-    {{- _self.icon(icon_asset|resize(512)) }},
-    {{- _self.icon(icon_asset|resize(192)|maskable, 'maskable') }},
-    {{- _self.icon(icon_asset|resize(512)|maskable, 'maskable') }}
+{%- set icons = [] %}
+{%- if site.manifest.icons|default([])|length > 0 %}
+  {%- for icon in site.manifest.icons %}
+    {#- icon with options #}
+    {%- if icon is iterable %}
+      {%- set icon_asset = asset(icon.src) %}
+      {%- set icons = icons|merge([{
+        src: icon_asset|url,
+        sizes: icon.sizes|default(icon_asset.width ~ 'x' ~ icon_asset.height),
+        type: icon.type|default(icon_asset.subtype),
+        purpose: icon.purpose|default('any'),
+      }]) %}
+    {#- icon file only #}
+    {%- else %}
+      {%- set icon_asset = asset(icon) %}
+      {%- set icons = icons|merge([{
+        src: icon_asset|url,
+        sizes: icon_asset.width ~ 'x' ~ icon_asset.height,
+        type: icon_asset.subtype,
+      }]) %}
     {%- endif %}
-  {%- endif %}
-{% endset -%}
-{#- screenshots #}
-{%- set screenshots %}
-  {%- for screenshot in site.manifest.screenshots|default([]) -%}
-    {%- set screenshot_asset = asset(screenshot) -%}
-    {
-      "src": "{{ screenshot_asset|url }}",
-      "sizes": "{{ screenshot_asset.width }}x{{ screenshot_asset.height }}",
-      "type": "{{ screenshot_asset.subtype }}",
-      "form_factor": "{% if screenshot_asset.width < screenshot_asset.height %}narrow{% else %}wide{% endif %}"
-    }{% if loop.length > 1 and not loop.last %},{% endif %}
   {%- endfor %}
-{% endset -%}
-{#- main -#}
-{
-  "name": "{{ site.manifest.name|default(site.title) }}",
-  "short_name": "{{ site.manifest.short_name|default(site.title[:12]) }}",
-  "description": "{{ site.manifest.description|default(site.description) }}",
-  "display_override": ["{{ site.manifest.display_override|default('standalone') }}"],
-  "display": "{{ site.manifest.display|default('standalone') }}",
-  "start_url": "{{ site.manifest.start_url|default(url(site.home, {canonical: true})) }}",
-  "id": "{{ site.manifest.id|default(url(site.home, {canonical: true})) }}",
-  "orientation": "{{ site.manifest.orientation|default('any') }}",
-  "background_color": "{{ site.manifest.background_color|default('#FFFFFF') }}",
-  "theme_color": "{{ site.manifest.theme_color|default('#202020') }}",
-  "lang": "{{ site.language|default('en') }}",
-  "dir": "{{ site.manifest.dir|default('ltr') }}",
-  "icons": [
-    {{ icons }}
-  ]
-  {%- if screenshots %},
-  "screenshots": [
-    {{- screenshots -}}
-  ]
+{%- else %}
+  {#- creates icons from `icon.png` if exists #}
+  {%- set icon_asset = asset('icon.png', {ignore_missing: true}) %}
+  {%- if not icon_asset.missing %}
+    {%- for purpose in ['any', 'maskable'] %}
+      {%- for size in [192, 512] %}
+        {%- set resized = purpose == 'maskable' ? icon_asset|resize(size)|maskable : icon_asset|resize(size) %}
+        {%- set icon = {
+          src: resized|url,
+          sizes: resized.width ~ 'x' ~ resized.height,
+          type: resized.subtype,
+        } %}
+        {%- if purpose == 'maskable' %}
+          {%- set icon = icon|merge({purpose: 'maskable'}) %}
+        {%- endif %}
+        {%- set icons = icons|merge([icon]) %}
+      {%- endfor %}
+    {%- endfor %}
   {%- endif %}
-  {%- if site.serviceworker.enabled|default(false) ~%},
-  "serviceworker": {
-    "src": "{{ url(site.page('serviceworker'), {canonical: true}) }}",
-    "scope": "/",
-    "use_cache": false
-  }
-  {%- endif -%}
-  {%- if site.manifest.shortcuts|default(false) and site.menus.main|length > 0 %},
-  "shortcuts": [
-  {%- for item in site.menus.main|filter(i => 'http' not in i.url)|sort_by_weight ~%}
-    {
-      "name": "{{ item.name }}",
-      "url": "{{ url(item.url) }}",
-      "icons": [
-        {
-          "src": "{{ asset('icon-link.png')|url }}",
-          "sizes": "{{ asset('icon-link.png').width }}x{{ asset('icon-link.png').height }}",
-          "type": "{{ asset('icon-link.png').subtype }}"
-        }
-      ]
-    }{% if loop.length > 1 and not loop.last %},{% endif ~%}
-  {%- endfor ~%}
-  ]
-  {%- endif ~%}
-}
+{%- endif %}
+{#- screenshots #}
+{%- set screenshots = [] %}
+{%- for screenshot in site.manifest.screenshots|default([]) %}
+  {%- set screenshot_asset = asset(screenshot) %}
+  {%- set screenshots = screenshots|merge([{
+    src: screenshot_asset|url,
+    sizes: screenshot_asset.width ~ 'x' ~ screenshot_asset.height,
+    type: screenshot_asset.subtype,
+    form_factor: screenshot_asset.width < screenshot_asset.height ? 'narrow' : 'wide',
+  }]) %}
+{%- endfor %}
+{#- shortcuts #}
+{%- set shortcuts = [] %}
+{%- if site.manifest.shortcuts|default(false) and site.menus.main|length > 0 %}
+  {%- set shortcut_icon = asset('icon-link.png') %}
+  {%- for item in site.menus.main|filter(i => 'http' not in i.url)|sort_by_weight %}
+    {%- set shortcuts = shortcuts|merge([{
+      name: item.name,
+      url: url(item.url),
+      icons: [{
+        src: shortcut_icon|url,
+        sizes: shortcut_icon.width ~ 'x' ~ shortcut_icon.height,
+        type: shortcut_icon.subtype,
+      }],
+    }]) %}
+  {%- endfor %}
+{%- endif %}
+{#- main #}
+{%- set display_override = site.manifest.display_override|default('standalone') %}
+{%- set manifest = {
+  name: site.manifest.name|default(site.title),
+  short_name: site.manifest.short_name|default(site.title[:12]),
+  description: site.manifest.description|default(site.description|default('')),
+  display_override: display_override is iterable ? display_override : [display_override],
+  display: site.manifest.display|default('standalone'),
+  start_url: site.manifest.start_url|default(url(site.home, {canonical: true})),
+  id: site.manifest.id|default(url(site.home, {canonical: true})),
+  orientation: site.manifest.orientation|default('any'),
+  background_color: site.manifest.background_color|default('#FFFFFF'),
+  theme_color: site.manifest.theme_color|default('#202020'),
+  lang: site.language|default('en') ~ '',
+  dir: site.manifest.dir|default('ltr'),
+  icons: icons,
+} %}
+{%- if screenshots|length > 0 %}
+  {%- set manifest = manifest|merge({screenshots: screenshots}) %}
+{%- endif %}
+{%- if shortcuts|length > 0 %}
+  {%- set manifest = manifest|merge({shortcuts: shortcuts}) %}
+{%- endif %}
+{{- manifest|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE'))|raw -}}
