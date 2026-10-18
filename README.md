@@ -2,6 +2,8 @@
 
 The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to implement a [Web manifest](https://developer.mozilla.org/docs/Web/Manifest) and a [service worker](https://developer.mozilla.org/docs/Web/API/Service_Worker_API) to turn a website into a [Progressive Web App](https://web.dev/explore/progressive-web-apps).
 
+**[Demo](https://cecilapp.github.io/theme-pwa/)**
+
 ![Screenshot of a website using the PWA component theme: custom install button, snackbar and offline page](docs/screenshot.png)
 
 ## Features
@@ -329,6 +331,15 @@ Messages (snackbar, notification and offline page) are translatable. A French tr
 > [!NOTE]
 > The 2.x options (at the root of the configuration and in front matter) are still supported but deprecated: when `debug` is enabled, a warning is displayed in the browser console.  
 > Your own `icon.png` and `icon-link.png` files, at the root of the _assets_ directory, still override the theme ones (now in `assets/pwa/`).
+
+## Demo
+
+The `demo` website is deployed to [GitHub Pages](https://cecilapp.github.io/theme-pwa/) on each push to `master`. To run it locally:
+
+```bash
+php demo/link.php
+php cecil.phar serve demo
+```
 
 ## Tests
 

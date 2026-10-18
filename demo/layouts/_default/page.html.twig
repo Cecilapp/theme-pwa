@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="{{ site.language }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{- include('partials/metatags.html.twig', {page, site}, with_context = false) }}
+    {{- include('partials/pwa.html.twig', {site}, with_context = false) }}
+    <style>
+      :root {
+        --accent: #5a3fc0;
+        --background: #ffffff;
+        --surface: #f4f2fb;
+        --color: #1f1d2b;
+        --muted: #5c5970;
+        color-scheme: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --accent: #b9a8ff;
+          --background: #16151d;
+          --surface: #222030;
+          --color: #ecebf3;
+          --muted: #a9a6bb;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--color);
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, helvetica, arial, sans-serif;
+        line-height: 1.6;
+      }
+      a {
+        color: var(--accent);
+      }
+      header, main, footer {
+        max-width: 48rem;
+        margin: 0 auto;
+        padding: 0 1rem;
+      }
+      header {
+        padding-block: 2rem 1rem;
+      }
+      header .title {
+        margin: 0;
+        color: var(--color);
+        font-size: 2rem;
+        font-weight: bold;
+      }
+      header .title a {
+        color: inherit;
+        text-decoration: none;
+      }
+      header p {
+        margin: 0;
+        color: var(--muted);
+      }
+      nav ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .25rem 1.25rem;
+        margin: 1rem 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      nav a[aria-current="page"] {
+        color: inherit;
+        font-weight: bold;
+        text-decoration: none;
+      }
+      .languages {
+        float: right;
+      }
+      code {
+        font-size: .9em;
+      }
+      .demo {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+        gap: 1rem;
+        margin-block: 2rem;
+      }
+      .card {
+        padding: 1rem 1.25rem;
+        border-radius: .5rem;
+        background: var(--surface);
+      }
+      .card h2 {
+        margin: 0 0 .5rem;
+        font-size: 1.1rem;
+      }
+      .card dl {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: .25rem 1rem;
+        margin: 0;
+      }
+      .card dt {
+        color: var(--muted);
+      }
+      .card dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+      .card p {
+        margin: 0 0 .75rem;
+        color: var(--muted);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+      }
+      button {
+        padding: .5rem 1rem;
+        border: 2px solid var(--accent);
+        border-radius: .25rem;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+      button.primary {
+        background: var(--accent);
+        color: var(--background);
+      }
+      button:focus-visible, a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .online {
+        color: #1a7f37;
+      }
+      .offline {
+        color: #cf222e;
+      }
+      @media (prefers-color-scheme: dark) {
+        .online {
+          color: #57d27a;
+        }
+        .offline {
+          color: #ff7b72;
+        }
+      }
+      footer {
+        padding-block: 2rem;
+        color: var(--muted);
+        font-size: .9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="languages" aria-label="{{ 'Languages'|trans }}">
+        {%- for language in site.languages %}
+          {%- if language.code != site.language %}
+            {%- set translation = page.translations|filter(p => p.language == language.code)|first %}
+        <a href="{{ url(translation ?: site.page('index', language.code)) }}" hreflang="{{ language.code }}" lang="{{ language.code }}">{{ language.name }}</a>
+          {%- endif %}
+        {%- endfor %}
+      </nav>
+      <p class="title"><a href="{{ url(site.home) }}">{{ site.title }}</a></p>
+      <p>{{ site.baseline }}</p>
+      <nav aria-label="{{ 'Main menu'|trans }}">
+        <ul>
+        {%- for entry in site.menus.main|sort_by_weight %}
+          <li><a href="{{ url(entry.url) }}"{% if url(entry.url) == url(page) %} aria-current="page"{% endif %}>{{ entry.name }}</a></li>
+        {%- endfor %}
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <h1>{{ page.title }}</h1>
+      {{ page.content }}
+      {%- if page.id == 'index' or page.id ends with '/index' %}
+      <div class="demo">
+        <section class="card" aria-labelledby="status-title">
+          <h2 id="status-title">{{ 'Status'|trans }}</h2>
+          <dl>
+            <dt>{{ 'Network'|trans }}</dt>
+            <dd id="status-network">…</dd>
+            <dt>{{ 'Service worker'|trans }}</dt>
+            <dd id="status-sw">…</dd>
+            <dt>{{ 'Cache'|trans }}</dt>
+            <dd id="status-cache">…</dd>
+          </dl>
+        </section>
+        <section class="card" aria-labelledby="actions-title">
+          <h2 id="actions-title">{{ 'Actions'|trans }}</h2>
+          <p>{{ 'The install button is displayed when your browser allows installing the app.'|trans }}</p>
+          <div class="actions">
+            <button type="button" id="install-button" class="primary" hidden>{{ 'Install the app'|trans }}</button>
+            <button type="button" id="snackbar-button">{{ 'Show a snackbar'|trans }}</button>
+          </div>
+        </section>
+      </div>
+      <script>
+        const labels = {
+          online: '{{ 'Online'|trans|e('js') }}',
+          offline: '{{ 'Offline'|trans|e('js') }}',
+          none: '{{ 'Not registered'|trans|e('js') }}',
+          entries: '{{ '%count% files in "%name%"'|trans|e('js') }}',
+          empty: '{{ 'Empty'|trans|e('js') }}',
+        };
+        async function refreshStatus() {
+          const network = document.getElementById('status-network');
+          network.textContent = navigator.onLine ? labels.online : labels.offline;
+          network.className = navigator.onLine ? 'online' : 'offline';
+          if (!('serviceWorker' in navigator)) {
+            document.getElementById('status-sw').textContent = labels.none;
+            return;
+          }
+          const registration = await navigator.serviceWorker.getRegistration();
+          document.getElementById('status-sw').textContent = registration?.active
+            ? registration.active.state + ' (' + new URL(registration.scope).pathname + ')'
+            : labels.none;
+          const keys = await caches.keys();
+          const counts = await Promise.all(keys.map(async key => (await (await caches.open(key)).keys()).length));
+          document.getElementById('status-cache').textContent = keys.length
+            ? keys.map((key, i) => labels.entries.replace('%count%', counts[i]).replace('%name%', key)).join(', ')
+            : labels.empty;
+        }
+        refreshStatus();
+        window.addEventListener('online', refreshStatus);
+        window.addEventListener('offline', refreshStatus);
+        navigator.serviceWorker?.addEventListener('controllerchange', refreshStatus);
+        setInterval(refreshStatus, 3000);
+        document.getElementById('snackbar-button').addEventListener('click', () => {
+          pwaSnackbar.show('{{ 'Hello from the snackbar!'|trans|e('js') }}', {
+            action: { label: '{{ 'Again'|trans|e('js') }}', callback: () => setTimeout(() => document.getElementById('snackbar-button').click(), 300) }
+          });
+        });
+      </script>
+      {%- endif %}
+    </main>
+    <footer>
+      {{ 'Built with <a href="https://cecil.app">Cecil</a> and the <a href="https://github.com/Cecilapp/theme-pwa">PWA component theme</a>.'|trans|raw }}
+    </footer>
+  </body>
+</html>

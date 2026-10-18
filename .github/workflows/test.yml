@@ -43,3 +43,8 @@ jobs:
 
       - name: Run tests
         run: node --test tests/pwa.test.mjs
+
+      - name: Build demo
+        run: |
+          php demo/link.php
+          php cecil.phar build demo -v
