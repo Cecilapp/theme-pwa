@@ -90,23 +90,31 @@
       document.querySelector('button').addEventListener('click', () => {
         window.location.reload();
       });
-      window.addEventListener('online', () => {
-        window.location.reload();
-      });
-      // checks the requested page with a HEAD request, which is not handled by the service worker
-      async function checkNetworkAndReload() {
-        try {
-          const response = await fetch(window.location.href, { method: 'HEAD', cache: 'no-store' });
-          if (response.status >= 200 && response.status < 500) {
-            window.location.reload();
-            return;
+      // displayed instead of the requested page (not opened directly): reloads it once the network is back
+      if (window.location.pathname !== '{{ url(page, {canonical: false})|e('js') }}') {
+        let delay = 5000;
+        let timer = null;
+        // checks the requested page with a HEAD request, which is not handled by the service worker
+        async function checkNetworkAndReload() {
+          window.clearTimeout(timer);
+          if (navigator.onLine) {
+            try {
+              const response = await fetch(window.location.href, { method: 'HEAD', cache: 'no-store' });
+              if (response.status >= 200 && response.status < 500) {
+                window.location.reload();
+                return;
+              }
+            } catch {
+              console.log('Unable to connect to the server');
+            }
           }
-        } catch {
-          console.log('Unable to connect to the server');
+          // checks after 5 s, then 10 s, 20 s, 40 s, and every minute
+          delay = Math.min(delay * 2, 60000);
+          timer = window.setTimeout(checkNetworkAndReload, delay);
         }
-        window.setTimeout(checkNetworkAndReload, 5000);
+        timer = window.setTimeout(checkNetworkAndReload, delay);
+        window.addEventListener('online', checkNetworkAndReload);
       }
-      checkNetworkAndReload();
     </script>
   </body>
 </html>

@@ -65,6 +65,11 @@ describe('Technical pages', () => {
     assert.match(html, /--pwa-offline-accent: #202020;/);
     assert.match(html, /<a href="\/my-repo\/fr\/">Aller à la page d'accueil<\/a>/);
   });
+
+  test('the offline page only checks the network when displayed instead of another page', () => {
+    // opened directly, a successful check would reload it endlessly
+    assert.match(read('fr/offline.html'), /if \(window\.location\.pathname !== '\\\/my\\u002Drepo\\\/fr\\\/offline\.html'\) \{/);
+  });
 });
 
 describe('Service worker', () => {
