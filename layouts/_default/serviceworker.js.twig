@@ -1,10 +1,25 @@
-var CACHE_VERSION = "{{ site.time }}";
-var CACHE_NAME = '{{ site.title|slugify }}';
-var CACHE = CACHE_NAME + '-v' + CACHE_VERSION;
+var CACHE_VERSION = '{{ site.time|e('js') }}';
+var CACHE_NAME = '{{ site.title|slugify|e('js') }}';
+var CACHE_PREFIX = CACHE_NAME + '-v';
+var CACHE = CACHE_PREFIX + CACHE_VERSION;
 var PATH_TO_IGNORE = [];
 {% if site.serviceworker.ignore is defined and site.serviceworker.ignore %}
-var PATH_TO_IGNORE = [{{ site.serviceworker.ignore|map(i => "'#{i.path}'") | join(', ')}}];
+var PATH_TO_IGNORE = [{% for i in site.serviceworker.ignore %}'{{ i.path|e('js') }}'{% if not loop.last %}, {% endif %}{% endfor %}];
 {% endif %}
+
+// offline pages, by language
+var OFFLINE_PAGES = [];
+{%- set offline_id = site.serviceworker.offline.page|default('offline') %}
+{%- for language in site.languages %}
+  {%- set offline_page = site.page(offline_id, language.code) %}
+  {%- set home_page = site.page('index', language.code) %}
+  {%- if offline_page is not null and home_page is not null ~%}
+OFFLINE_PAGES.push({ prefix: '{{ url(home_page, {canonical: false})|e('js') }}', url: '{{ url(offline_page, {canonical: false})|e('js') }}' });
+  {%- endif %}
+{%- endfor %}
+
+// the most specific prefix first (e.g. "/fr/" before "/")
+OFFLINE_PAGES.sort((a, b) => b.prefix.length - a.prefix.length);
 
 // prepares precache
 var precache = [];
@@ -12,24 +27,29 @@ var precache = [];
 // icons
   {%- for icon in site.manifest.icons|default([]) %}
     {%- if icon is iterable ~%}
-precache.push('{{ asset(icon.src)|url({canonical: false}) }}');
+precache.push('{{ asset(icon.src)|url({canonical: false})|e('js') }}');
     {%- else ~%}
-precache.push('{{ asset(icon)|url({canonical: false}) }}');
+precache.push('{{ asset(icon)|url({canonical: false})|e('js') }}');
     {%- endif ~%}
   {%- endfor ~%}
 {% endif %}
 // pages
 {% set pages_to_precache = site.allpages|filter(p => p.published == true and p.redirect is not defined and (p.serviceworker.precache ?? true) != false)|sort((a, b) => a.path > b.path) %}
 {% for page in pages_to_precache|slice(0, (site.serviceworker.install.precache.pages.limit ?? false) == false ? pages_to_precache|length : site.serviceworker.install.precache.pages.limit) %}
-precache.push('{{ url(page, {canonical: false}) }}');
+precache.push('{{ url(page, {canonical: false})|e('js') }}');
 {% endfor %}
 {%- block precache %}{% endblock -%}
 {% if site.serviceworker.install.precache.assets is defined %}
 // assets
   {%- for file in site.serviceworker.install.precache.assets ~%}
-precache.push('{{ asset(file)|url({canonical: false}) }}');
+precache.push('{{ asset(file)|url({canonical: false})|e('js') }}');
   {%- endfor ~%}
 {% endif %}
+// offline pages are always precached
+OFFLINE_PAGES.forEach(function (offline) {
+  precache.push(offline.url);
+});
+precache = [...new Set(precache)];
 
 // install and precache
 self.addEventListener('install', function(event) {
@@ -42,12 +62,12 @@ self.addEventListener('install', function(event) {
       {%- if site.debug|default(false) ~%}
       console.log(`[SW] Create cache storage "${CACHE}"`);
       {%- endif ~%}
-      precache.forEach(function (path) {
+      return Promise.allSettled(precache.map(function (path) {
         {%- if site.debug|default(false) ~%}
         console.log('[SW] Precache', path);
         {%- endif ~%}
-        cache.add(new Request(path, {cache: '{{ site.serviceworker.cache.request|default('reload') }}'})).catch(error => console.error(`[SW] Can't add "${path}" to cache`));
-      });
+        return cache.add(new Request(path, {cache: '{{ site.serviceworker.cache.request|default('reload')|e('js') }}'})).catch(error => console.error(`[SW] Can't add "${path}" to cache`));
+      }));
     })
   );
 });
@@ -59,26 +79,25 @@ self.addEventListener('activate', function(event) {
   {%- endif ~%}
   const activate = async () => {
     // checks cache version
-    caches.keys().then(function(keyList) {
-      return Promise.all(keyList.map(function(key) {
-        // cache obsolete?
-        if (key !== CACHE) {
-          {%- if site.debug|default(false) ~%}
-          console.log(`[SW] Remove old cache storage "${key}"`);
-          {%- endif ~%}
-          return caches.delete(key);
-        }
-      }));
-    })
+    const keyList = await caches.keys();
+    await Promise.all(keyList.map(function(key) {
+      // obsolete cache of this website?
+      if (key.startsWith(CACHE_PREFIX) && key !== CACHE) {
+        {%- if site.debug|default(false) ~%}
+        console.log(`[SW] Remove old cache storage "${key}"`);
+        {%- endif ~%}
+        return caches.delete(key);
+      }
+    }));
     // claim clients immediately
-    self.clients.claim();
+    await self.clients.claim();
   };
   event.waitUntil(activate());
 });
 
 // fetch
 self.addEventListener('fetch', function(event) {
-  url = new URL(event.request.url);
+  const url = new URL(event.request.url);
   // ignores...
   // ...not GET requests
   if (event.request.method !== 'GET') {
@@ -89,19 +108,14 @@ self.addEventListener('fetch', function(event) {
     return;
   }
   // ...Cecil's watcher
-  if (url.pathname == '/watcher') {
+  if (url.pathname.endsWith('/watcher')) {
     return;
   }
   // ...optional paths
-  try {
-    PATH_TO_IGNORE.forEach(function (path) {
-      if (url.pathname.startsWith(path)) {
-        throw new Error('[SW] Ignore', path);
-      }
-    });
-  } catch (e) {
+  const ignoredPath = PATH_TO_IGNORE.find(path => url.pathname.startsWith(path));
+  if (ignoredPath !== undefined) {
     {%- if site.debug|default(false) ~%}
-    console.log(e.message);
+    console.log('[SW] Ignore', ignoredPath);
     {%- endif ~%}
     return;
   }
@@ -133,26 +147,21 @@ self.addEventListener('fetch', function(event) {
           {%- if site.debug|default(false) ~%}
           console.log('[SW] Put to cache', event.request.url);
           {%- endif ~%}
-          cache.put(new Request(event.request, { cache: '{{ site.serviceworker.cache.request|default('reload') }}' }), responseToCache);
+          cache.put(new Request(event.request, { cache: '{{ site.serviceworker.cache.request|default('reload')|e('js') }}' }), responseToCache);
         });
         return response;
       })
       .catch(function(response) {
-        // offline page
-        if (event.request.mode === 'navigate' || (event.request.method === 'GET' && event.request.headers.get('Accept').includes('text/html'))) {
-          var langPrefix = '';
-          var languages = [{{ site.languages|column('code')|map(l => "'#{l}'")|join(', ') }}];
-          if (languages.length > 1) {
-            var pathPrefix = url.pathname.split('/')[1]; // 'fr'?
-            if (languages.includes(pathPrefix)) {
-              var langPrefix = '/' + pathPrefix;
-            }
+        // offline page (of the current language)
+        if (event.request.mode === 'navigate' || event.request.headers.get('Accept')?.includes('text/html')) {
+          const offline = OFFLINE_PAGES.find(page => url.pathname.startsWith(page.prefix));
+          if (offline !== undefined) {
+            return caches.match(offline.url).then(response => response || Response.error());
           }
-          return caches.match(langPrefix + '{{ url(site.serviceworker.offline.page|default('offline'), {canonical: false}) }}');
         }
         // offline image
         if (event.request.destination === 'image') {
-          return new Response('<svg role="img" aria-labelledby="offline-title" viewBox="-102.4 -102.4 716.80 716.80" xmlns="http://www.w3.org/2000/svg" fill="#505050" stroke="#505050"><title id="offline-title">{{ 'Offline'|trans }}</title><g><path d="M93.72,183.25C49.49,198.05,16,233.1,16,288c0,66,54,112,120,112H320.37" style="fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><path d="M467.82,377.74C485.24,363.3,496,341.61,496,312c0-59.82-53-85.76-96-88-8.89-89.54-71-144-144-144-26.16,0-48.79,6.93-67.6,18.14" style="fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><line x1="448" y1="448" x2="64" y2="64" style="fill:none;stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"></line></g></svg>', { headers: { 'Content-Type': 'image/svg+xml' } });
+          return new Response('<svg role="img" aria-labelledby="offline-title" viewBox="-102.4 -102.4 716.80 716.80" xmlns="http://www.w3.org/2000/svg" fill="#505050" stroke="#505050"><title id="offline-title">{{ 'Offline'|trans|e('html')|e('js') }}</title><g><path d="M93.72,183.25C49.49,198.05,16,233.1,16,288c0,66,54,112,120,112H320.37" style="fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><path d="M467.82,377.74C485.24,363.3,496,341.61,496,312c0-59.82-53-85.76-96-88-8.89-89.54-71-144-144-144-26.16,0-48.79,6.93-67.6,18.14" style="fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:32px"></path><line x1="448" y1="448" x2="64" y2="64" style="fill:none;stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"></line></g></svg>', { headers: { 'Content-Type': 'image/svg+xml' } });
         }
         return Response.error();
       });
@@ -166,9 +175,9 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then((clientList) => {
-      const hadWindowToFocus = clientList.some((windowClient) => windowClient.url.startsWith('{{ site.baseurl }}') ? (windowClient.focus(), true) : false);
+      const hadWindowToFocus = clientList.some((windowClient) => windowClient.url.startsWith(self.registration.scope) ? (windowClient.focus(), true) : false);
       if (!hadWindowToFocus) {
-        clients.openWindow('{{ site.baseurl }}').then((windowClient) => (windowClient ? windowClient.focus() : null));
+        clients.openWindow(self.registration.scope).then((windowClient) => (windowClient ? windowClient.focus() : null));
       }
     })
   );

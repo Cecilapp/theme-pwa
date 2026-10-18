@@ -2,19 +2,10 @@
     <script>{% apply minify_js ~%}
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          {%- if site.serviceworker.update.notification|default(false) ~%}
-          // checks notification permission
-          Notification.requestPermission(permission => {
-            if (!('permission' in Notification)) {
-              Notification.permission = permission;
-            }
-            return permission;
-          })
-          {%- endif ~%}
           {%- if site.serviceworker is defined and site.serviceworker.enabled ~%}
-          // register service worker
+          // register service worker (default scope: the directory of the script, i.e. the base URL)
           navigator.serviceWorker
-            .register('{{ url(site.page('serviceworker'), {canonical: true}) }}', { scope: '/' })
+            .register('{{ url(site.page('serviceworker'), {canonical: true})|e('js') }}')
             .then(function (registration) {
               {%- if site.debug|default(false) ~%}
               console.log('[SW] Registration successful with scope', registration.scope);
@@ -34,7 +25,7 @@
                       {%- endif ~%}
                       {%- if site.serviceworker.update.snackbar|default(false) ~%}
                       // snackbar
-                      showSnackbar('{{ "New version is available, please reload"|trans }}');
+                      showSnackbar('{{ "New version is available, please reload"|trans|e('js') }}');
                       {%- endif ~%}
                       {%- if site.serviceworker.update.badge|default(false) ~%}
                       // badge
@@ -50,19 +41,33 @@
                       {%- if site.debug|default(false) ~%}
                       console.log('[SW] Notification enabled');
                       {%- endif ~%}
-                      Notification.requestPermission().then((result) => {
-                        if (result === "granted") {
-                          navigator.serviceWorker.ready.then((registration) => {
-                            const title = "{{ 'Update of %title%'|trans({'%title%': site.title}) }}";
-                            const options = {
-                              body: "{{ 'Website updated since your last visit.'|trans }}",
-                              icon: '{{ asset(site.manifest.icons|first) }}',
-                              vibrate: [200, 100, 100, 100]
-                            };
-                            registration.showNotification(title, options);
-                          });
-                        }
-                      });
+                      {%- set notification_icon = '' %}
+                      {%- if site.manifest.icons|default([])|length > 0 %}
+                        {%- set first_icon = site.manifest.icons|first %}
+                        {%- set notification_icon = asset(first_icon is iterable ? first_icon.src : first_icon)|url %}
+                      {%- else %}
+                        {%- set icon_asset = asset('icon.png', {ignore_missing: true}) %}
+                        {%- if not icon_asset.missing %}
+                          {%- set notification_icon = icon_asset|resize(192)|url %}
+                        {%- endif %}
+                      {%- endif ~%}
+                      if ('Notification' in window && Notification.permission !== 'denied') {
+                        Notification.requestPermission().then((result) => {
+                          if (result === 'granted') {
+                            navigator.serviceWorker.ready.then((registration) => {
+                              const title = '{{ 'Update of %title%'|trans({'%title%': site.title})|e('js') }}';
+                              const options = {
+                                body: '{{ 'Website updated since your last visit.'|trans|e('js') }}',
+                                {%- if notification_icon ~%}
+                                icon: '{{ notification_icon|e('js') }}',
+                                {%- endif ~%}
+                                vibrate: [200, 100, 100, 100]
+                              };
+                              registration.showNotification(title, options);
+                            });
+                          }
+                        });
+                      }
                       {%- endif ~%}
                     }
                   }
@@ -84,13 +89,13 @@
               registration.unregister()
             })
           })
-          // 2. remove cache
+          // 2. remove cache (of this website only)
           caches.keys().then(function(keyList) {
-            Promise.all(keyList.map(function(key) {
+            Promise.all(keyList.filter(key => key.startsWith('{{ site.title|slugify|e('js') }}-v')).map(function(key) {
               {%- if site.debug|default(false) ~%}
-              console.log('[SW] Remove cache');
+              console.log('[SW] Remove cache', key);
               {%- endif ~%}
-              caches.delete(key);
+              return caches.delete(key);
             }));
           });
           {%- endif ~%}
@@ -99,29 +104,39 @@
       {%- if not (site.serviceworker.install.prompt ?? false) ~%}
       // install prompt
       window.addEventListener('load', () => {
+        {%- if site.serviceworker.install.button is not empty ~%}
+        let installPrompt = null;
+        const installButton = document.querySelector('{{ site.serviceworker.install.button|e('js') }}');
+        {%- endif ~%}
         window.addEventListener('beforeinstallprompt', (event) => {
           event.preventDefault();
           {%- if site.serviceworker.install.button is not empty ~%}
-          installPrompt = event;
-          installButton.removeAttribute('hidden');
+          if (installButton) {
+            installPrompt = event;
+            installButton.removeAttribute('hidden');
+          }
           {%- endif ~%}
         });
-          {%- if site.serviceworker.install.button is not empty ~%}
-        let installPrompt = null;
-        const installButton = document.querySelector('{{ site.serviceworker.install.button }}');
+        {%- if site.serviceworker.install.button is not empty ~%}
+        if (!installButton) {
+          {%- if site.debug|default(false) ~%}
+          console.log('[SW] Install button not found');
+          {%- endif ~%}
+          return;
+        }
         installButton.addEventListener('click', async () => {
           if (!installPrompt) {
             return;
           }
           const result = await installPrompt.prompt();
           {%- if site.debug|default(false) ~%}
-          console.log('[WS] Install prompt was:', result.outcome);
+          console.log('[SW] Install prompt was:', result.outcome);
           {%- endif ~%}
           disableInAppInstallPrompt();
         });
         window.addEventListener('appinstalled', () => {
           {%- if site.debug|default(false) ~%}
-          console.log('[WS] PWA installed');
+          console.log('[SW] PWA installed');
           {%- endif ~%}
           disableInAppInstallPrompt();
         });
@@ -129,7 +144,7 @@
           installPrompt = null;
           installButton.setAttribute('hidden', '');
         }
-          {%- endif ~%}
+        {%- endif ~%}
       })
       {%- endif ~%}
       {%- if site.serviceworker is defined and site.debug|default(false) ~%}
@@ -148,7 +163,7 @@
         console.log('Network connection lost.');
         {%- if site.serviceworker.offline.snackbar|default(false) ~%}
         // snackbar
-        showSnackbar('{{ "You are offline"|trans }}');
+        showSnackbar('{{ "You are offline"|trans|e('js') }}');
         {%- endif ~%}
       });
     {% endapply %}</script>
@@ -202,7 +217,7 @@
       function showSnackbar(message) {
         var snackbar = document.getElementById('snackbar');
         snackbar.className = 'show';
-        snackbar.innerHTML = message;
+        snackbar.textContent = message;
         setTimeout(() => {
           snackbar.className = snackbar.className.replace('show', '');
         }, 3000);
