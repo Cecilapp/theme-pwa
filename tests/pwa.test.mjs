@@ -2,6 +2,7 @@
 //   php tests/link.php
 //   php cecil.phar build tests/site
 //   php cecil.phar build tests/site --config=legacy.yml --output=_site-legacy
+//   php cecil.phar build tests/site --config=autoescape.yml --output=_site-autoescape
 //   node --test tests/pwa.test.mjs
 // The service worker runs with an in-memory Cache Storage and a fake network.
 import { test, describe, beforeEach } from 'node:test';
@@ -66,6 +67,24 @@ describe('Deprecated 2.x options (root `manifest` and `serviceworker` keys)', ()
   test('display a warning in debug mode only', () => {
     assert.match(readLegacy('index.html'), /console\.warn\('\[PWA\] The `manifest` and `serviceworker` options/);
     assert.doesNotMatch(read('index.html'), /console\.warn\('\[PWA\]/);
+  });
+});
+
+describe('Extension-based autoescape (`layouts.autoescape: null`)', () => {
+  const readAutoescape = file => fs.readFileSync(path.join(SITE, '..', '_site-autoescape', file), 'utf8');
+  const scripts = html => [...html.matchAll(/<script>(.*?)<\/script>/gs)].map(m => m[1]);
+
+  test('is enabled (HTML is escaped)', () => {
+    assert.match(readAutoescape('offline.html'), /<title>[^<]*L&#039;atelier &quot;test&quot; &amp; co<\/title>/);
+  });
+
+  test('does not alter the Web manifest, the service worker and inline scripts', () => {
+    assert.deepEqual(JSON.parse(readAutoescape('manifest.webmanifest')), JSON.parse(read('manifest.webmanifest')));
+    const withoutVersion = js => js.replace(/var CACHE_VERSION = '[^']*';/, '');
+    assert.equal(withoutVersion(readAutoescape('serviceworker.js')), withoutVersion(read('serviceworker.js')));
+    for (const file of ['index.html', 'fr/index.html', 'offline.html']) {
+      assert.deepEqual(scripts(readAutoescape(file)), scripts(read(file)), file);
+    }
   });
 });
 

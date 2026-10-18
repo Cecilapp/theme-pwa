@@ -19,7 +19,7 @@ The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to imp
 
 ## Prerequisites
 
-- A [Cecil](https://cecil.app) website
+- A [Cecil](https://cecil.app) website (Cecil 9.18.1 or later if `layouts.autoescape` is enabled)
 - A [supported browser](https://caniuse.com/serviceworkers)
 - HTTPS (or `localhost` during development)
 
@@ -338,6 +338,7 @@ The `tests/site` website is built with the theme, then the generated files are t
 php tests/link.php
 php cecil.phar build tests/site
 php cecil.phar build tests/site --config=legacy.yml --output=_site-legacy
+php cecil.phar build tests/site --config=autoescape.yml --output=_site-autoescape
 node --test tests/pwa.test.mjs
 ```
 
