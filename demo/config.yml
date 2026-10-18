@@ -1,0 +1,45 @@
+title: PWA
+baseline: Turn a Cecil website into a Progressive Web App.
+description: Demo of the PWA component theme for Cecil.
+baseurl: http://localhost:8000/
+theme:
+  - pwa
+language: en
+languages:
+  - code: en
+    name: English
+    locale: en_US
+  - code: fr
+    name: Français
+    locale: fr_FR
+    config:
+      baseline: Transformez un site Cecil en Progressive Web App.
+      # page IDs: `url()` returns the URL of the page in the current language
+      menus:
+        main:
+          - {id: index, name: Accueil, url: index, weight: 10}
+          - {id: precached, name: Page précachée, url: precached, weight: 20}
+          - {id: uncached, name: Page non cachée, url: uncached, weight: 30}
+          - {id: github, name: GitHub, url: 'https://github.com/Cecilapp/theme-pwa', weight: 40}
+menus:
+  main:
+    - {id: index, name: Home, url: index, weight: 10}
+    - {id: precached, name: Precached page, url: precached, weight: 20}
+    - {id: uncached, name: Uncached page, url: uncached, weight: 30}
+    - {id: github, name: GitHub, url: 'https://github.com/Cecilapp/theme-pwa', weight: 40}
+pwa:
+  manifest:
+    background_color: '#FFFFFF'
+    theme_color: '#5A3FC0'
+    theme_color_dark: '#B9A8FF'
+    shortcuts: true
+  serviceworker:
+    enabled: true
+    install:
+      prompt: false
+      button: '#install-button'
+    update:
+      snackbar: true
+      badge: true
+    offline:
+      snackbar: true
