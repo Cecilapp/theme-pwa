@@ -1,6 +1,7 @@
 // Tests the files generated from the test site (`tests/site/_site`):
 //   php tests/link.php
 //   php cecil.phar build tests/site
+//   php cecil.phar build tests/site --config=legacy.yml --output=_site-legacy
 //   node --test tests/pwa.test.mjs
 // The service worker runs with an in-memory Cache Storage and a fake network.
 import { test, describe, beforeEach } from 'node:test';
@@ -50,6 +51,21 @@ describe('Inline scripts', () => {
     assert.match(html, /\.pwa-snackbar\{/);
     assert.match(html, /setAttribute\(.role.,.status.\)/);
     assert.match(html, /callback:\(\)=>window\.location\.reload\(\)/);
+  });
+});
+
+describe('Deprecated 2.x options (root `manifest` and `serviceworker` keys)', () => {
+  const readLegacy = file => fs.readFileSync(path.join(SITE, '..', '_site-legacy', file), 'utf8');
+
+  test('are still applied', () => {
+    assert.equal(JSON.parse(readLegacy('manifest.webmanifest')).theme_color, '#FF0000');
+    assert.doesNotMatch(readLegacy('index.html'), /pwaSnackbar\.show\('New/);
+    assert.match(read('index.html'), /pwaSnackbar\.show\('New/);
+  });
+
+  test('display a warning in debug mode only', () => {
+    assert.match(readLegacy('index.html'), /console\.warn\('\[PWA\] The `manifest` and `serviceworker` options/);
+    assert.doesNotMatch(read('index.html'), /console\.warn\('\[PWA\]/);
   });
 });
 

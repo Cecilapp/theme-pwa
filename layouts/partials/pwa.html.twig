@@ -1,7 +1,13 @@
     {#- PWA ~#}
-    <meta name="theme-color" content="{{ site.manifest.theme_color|default('#202020') }}"{% if site.manifest.theme_color_dark is defined %} media="(prefers-color-scheme: light)"{% endif %}>
-    {%- if site.manifest.theme_color_dark is defined ~%}
-    <meta name="theme-color" content="{{ site.manifest.theme_color_dark }}" media="(prefers-color-scheme: dark)">
+    {#- options (`manifest` and `serviceworker` at the root of the configuration are deprecated since 3.0) ~#}
+    {%- set manifest = (site.pwa.manifest ?? {})|merge(site.manifest ?? {}) %}
+    {%- set sw = (site.pwa.serviceworker ?? {})|merge(site.serviceworker ?? {}) ~%}
+    <meta name="theme-color" content="{{ manifest.theme_color|default('#202020') }}"{% if manifest.theme_color_dark is defined %} media="(prefers-color-scheme: light)"{% endif %}>
+    {%- if manifest.theme_color_dark is defined ~%}
+    <meta name="theme-color" content="{{ manifest.theme_color_dark }}" media="(prefers-color-scheme: dark)">
     {%- endif ~%}
     <link rel="manifest" href="{{ url('manifest', {language: site.language}) }}">
-    {{- include('partials/regsw.js.twig', {site}, with_context = false) ~}}
+    {%- if site.debug|default(false) and (site.manifest is defined or site.serviceworker is defined) ~%}
+    <script>console.warn('[PWA] The `manifest` and `serviceworker` options must be moved under the `pwa` key of the configuration (see https://github.com/Cecilapp/theme-pwa#upgrade-from-2x).');</script>
+    {%- endif ~%}
+    {{- include('partials/pwa/register.html.twig', {site, manifest, sw}, with_context = false) ~}}

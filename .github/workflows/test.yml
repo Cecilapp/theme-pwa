@@ -37,7 +37,9 @@ jobs:
         run: php tests/link.php
 
       - name: Build test site
-        run: php cecil.phar build tests/site -v
+        run: |
+          php cecil.phar build tests/site -v
+          php cecil.phar build tests/site --config=legacy.yml --output=_site-legacy -v
 
       - name: Run tests
         run: node --test tests/pwa.test.mjs

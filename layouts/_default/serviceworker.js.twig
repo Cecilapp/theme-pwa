@@ -1,15 +1,18 @@
+{#- options (`manifest` and `serviceworker` at the root of the configuration are deprecated since 3.0) #}
+{%- set manifest = (site.pwa.manifest ?? {})|merge(site.manifest ?? {}) %}
+{%- set sw = (site.pwa.serviceworker ?? {})|merge(site.serviceworker ?? {}) -%}
 var CACHE_VERSION = '{{ site.time|e('js') }}';
 var CACHE_NAME = '{{ site.title|slugify|e('js') }}';
 var CACHE_PREFIX = CACHE_NAME + '-v';
 var CACHE = CACHE_PREFIX + CACHE_VERSION;
 var PATH_TO_IGNORE = [];
-{% if site.serviceworker.ignore is defined and site.serviceworker.ignore %}
-var PATH_TO_IGNORE = [{% for i in site.serviceworker.ignore %}'{{ i.path|e('js') }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+{% if sw.ignore is defined and sw.ignore %}
+var PATH_TO_IGNORE = [{% for i in sw.ignore %}'{{ i.path|e('js') }}'{% if not loop.last %}, {% endif %}{% endfor %}];
 {% endif %}
 
 // offline pages, by language
 var OFFLINE_PAGES = [];
-{%- set offline_id = site.serviceworker.offline.page|default('offline') %}
+{%- set offline_id = sw.offline.page|default('offline') %}
 {%- for language in site.languages %}
   {%- set offline_page = site.page(offline_id, language.code) %}
   {%- set home_page = site.page('index', language.code) %}
@@ -23,9 +26,9 @@ OFFLINE_PAGES.sort((a, b) => b.prefix.length - a.prefix.length);
 
 // prepares precache
 var precache = [];
-{% if site.serviceworker.install.precache.icons ?? false and site.manifest.icons|default([])|length > 0 %}
+{% if sw.install.precache.icons ?? false and manifest.icons|default([])|length > 0 %}
 // icons
-  {%- for icon in site.manifest.icons|default([]) %}
+  {%- for icon in manifest.icons|default([]) %}
     {%- if icon is iterable ~%}
 precache.push('{{ asset(icon.src)|url({canonical: false})|e('js') }}');
     {%- else ~%}
@@ -35,13 +38,13 @@ precache.push('{{ asset(icon)|url({canonical: false})|e('js') }}');
 {% endif %}
 // pages
 {% set pages_to_precache = site.allpages|filter(p => p.published == true and p.redirect is not defined and (p.serviceworker.precache ?? true) != false)|sort((a, b) => a.path > b.path) %}
-{% for page in pages_to_precache|slice(0, (site.serviceworker.install.precache.pages.limit ?? false) == false ? pages_to_precache|length : site.serviceworker.install.precache.pages.limit) %}
+{% for page in pages_to_precache|slice(0, (sw.install.precache.pages.limit ?? false) == false ? pages_to_precache|length : sw.install.precache.pages.limit) %}
 precache.push('{{ url(page, {canonical: false})|e('js') }}');
 {% endfor %}
 {%- block precache %}{% endblock -%}
-{% if site.serviceworker.install.precache.assets is defined %}
+{% if sw.install.precache.assets is defined %}
 // assets
-  {%- for file in site.serviceworker.install.precache.assets ~%}
+  {%- for file in sw.install.precache.assets ~%}
 precache.push('{{ asset(file)|url({canonical: false})|e('js') }}');
   {%- endfor ~%}
 {% endif %}
@@ -71,7 +74,7 @@ self.addEventListener('install', function(event) {
         {%- if site.debug|default(false) ~%}
         console.log('[SW] Precache', path);
         {%- endif ~%}
-        return cache.add(new Request(path, {cache: '{{ site.serviceworker.cache.request|default('reload')|e('js') }}'})).catch(error => console.error(`[SW] Can't add "${path}" to cache`));
+        return cache.add(new Request(path, {cache: '{{ sw.cache.request|default('reload')|e('js') }}'})).catch(error => console.error(`[SW] Can't add "${path}" to cache`));
       }));
     })
   );
@@ -101,7 +104,7 @@ self.addEventListener('activate', function(event) {
 });
 
 // pages (HTML) strategy: 'network-first' or 'cache-first'
-var PAGES_STRATEGY = '{{ site.serviceworker.cache.strategy|default('network-first')|e('js') }}';
+var PAGES_STRATEGY = '{{ sw.cache.strategy|default('network-first')|e('js') }}';
 
 // is it a page request?
 function isPage(request) {
@@ -239,7 +242,7 @@ self.addEventListener('fetch', function(event) {
   event.respondWith(staleWhileRevalidate(event));
 });
 
-{%- if site.serviceworker.update.notification|default(false) ~%}
+{%- if sw.update.notification|default(false) ~%}
 // notification click
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();

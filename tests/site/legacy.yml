@@ -1,0 +1,8 @@
+# Deprecated 2.x options, at the root of the configuration (built in `_site-legacy`)
+debug: true
+manifest:
+  theme_color: '#FF0000'
+serviceworker:
+  enabled: true
+  update:
+    snackbar: false

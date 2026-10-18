@@ -2,3 +2,4 @@ _site/
 .cache/
 .cecil/
 themes/
+_site-legacy/

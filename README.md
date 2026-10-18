@@ -61,16 +61,17 @@ The theme generates the following files:
 Configure [Web manifest](https://developer.mozilla.org/docs/Web/Manifest) options:
 
 ```yaml
-manifest:
-  background_color: '#FFFFFF'
-  theme_color: '#202020'
-  icons:
-    - icon-192x192.png
-    - icon-512x512.png
-    - src: icon-192x192-maskable.png
-      purpose: maskable
-    - src: icon-512x512-maskable.png
-      purpose: maskable
+pwa:
+  manifest:
+    background_color: '#FFFFFF'
+    theme_color: '#202020'
+    icons:
+      - icon-192x192.png
+      - icon-512x512.png
+      - src: icon-192x192-maskable.png
+        purpose: maskable
+      - src: icon-512x512-maskable.png
+        purpose: maskable
 ```
 
 > [!NOTE]
@@ -83,16 +84,17 @@ manifest:
 The following options are also available, with their default values:
 
 ```yaml
-manifest:
-  name: <site.title>
-  short_name: <site.title> # truncated to 12 characters
-  description: <site.description>
-  display: standalone
-  display_override: standalone
-  start_url: <home page URL>
-  id: <home page URL>
-  orientation: any
-  dir: ltr
+pwa:
+  manifest:
+    name: <site.title>
+    short_name: <site.title> # truncated to 12 characters
+    description: <site.description>
+    display: standalone
+    display_override: standalone
+    start_url: <home page URL>
+    id: <home page URL>
+    orientation: any
+    dir: ltr
 ```
 
 #### Optional Web manifest settings
@@ -100,20 +102,22 @@ manifest:
 Add [shortcuts](https://developer.mozilla.org/docs/Web/Manifest/shortcuts) from the `main` menu entries (external links are ignored):
 
 ```yaml
-manifest:
-  shortcuts: true
+pwa:
+  manifest:
+    shortcuts: true
 ```
 
 > [!TIP]
-> Shortcuts use the `icon-link.png` icon: add your own file with this name in the _assets_ directory to override it.
+> Shortcuts use the theme `pwa/icon-link.png` icon: add your own `icon-link.png` file in the _assets_ directory to override it.
 
 Provide [installer screenshots](https://developer.mozilla.org/docs/Web/Manifest/screenshots) (relative to the _assets_ directory):
 
 ```yaml
-manifest:
-  screenshots:
-    - screenshots/desktop.png
-    - screenshots/mobile.png
+pwa:
+  manifest:
+    screenshots:
+      - screenshots/desktop.png
+      - screenshots/mobile.png
 ```
 
 > [!NOTE]
@@ -124,8 +128,9 @@ manifest:
 Enable the service worker:
 
 ```yaml
-serviceworker:
-  enabled: true
+pwa:
+  serviceworker:
+    enabled: true
 ```
 
 > [!IMPORTANT]
@@ -137,10 +142,11 @@ serviceworker:
 Disable the browser install prompt and use a custom install button:
 
 ```yaml
-serviceworker:
-  install:
-    prompt: false
-    button: '#install-button' # query selector
+pwa:
+  serviceworker:
+    install:
+      prompt: false
+      button: '#install-button' # query selector
 ```
 
 ```html
@@ -150,40 +156,43 @@ serviceworker:
 > [!NOTE]
 > The button must be hidden by default: it is displayed only when the browser allows the installation, and hidden again once the app is installed.
 
-Icons defined in `manifest.icons` are precached by default. To disable this behavior:
+Icons defined in `pwa.manifest.icons` are precached by default. To disable this behavior:
 
 ```yaml
-serviceworker:
-  install:
-    precache:
-      icons: false
+pwa:
+  serviceworker:
+    install:
+      precache:
+        icons: false
 ```
 
 By default, all published pages are precached. To limit this number:
 
 ```yaml
-serviceworker:
-  install:
-    precache:
-      pages:
-        limit: 10
+pwa:
+  serviceworker:
+    install:
+      precache:
+        pages:
+          limit: 10
 ```
 
 Set the list of precached assets (relative to the _assets_ directory):
 
 ```yaml
-serviceworker:
-  install:
-    precache:
-      assets:
-        - logo.png
+pwa:
+  serviceworker:
+    install:
+      precache:
+        assets:
+          - logo.png
 ```
 
 Do not precache a specific page (through its front matter):
 
 ```yaml
 ---
-serviceworker:
+pwa:
   precache: false
 ---
 ```
@@ -191,10 +200,11 @@ serviceworker:
 Define ignored paths (requests starting with these paths are never cached):
 
 ```yaml
-serviceworker:
-  ignore:
-    - name: 'cms'
-      path: '/admin'
+pwa:
+  serviceworker:
+    ignore:
+      - name: 'cms'
+        path: '/admin'
 ```
 
 Set the caching strategy of pages (HTML):
@@ -203,9 +213,10 @@ Set the caching strategy of pages (HTML):
 - `cache-first`: pages are served from the cache when available, faster but possibly outdated until the next service worker update
 
 ```yaml
-serviceworker:
-  cache:
-    strategy: cache-first
+pwa:
+  serviceworker:
+    cache:
+      strategy: cache-first
 ```
 
 > [!NOTE]
@@ -215,19 +226,21 @@ serviceworker:
 Set the [cache mode](https://developer.mozilla.org/docs/Web/API/Request/cache) of precache requests (`reload` by default, or `default`):
 
 ```yaml
-serviceworker:
-  cache:
-    request: default
+pwa:
+  serviceworker:
+    cache:
+      request: default
 ```
 
 Notify the user when a new version of the website is available, through a snackbar, a badge on the app icon and/or a system notification:
 
 ```yaml
-serviceworker:
-  update:
-    snackbar: true
-    badge: true
-    notification: true
+pwa:
+  serviceworker:
+    update:
+      snackbar: true
+      badge: true
+      notification: true
 ```
 
 > [!NOTE]
@@ -237,9 +250,10 @@ serviceworker:
 Display a snackbar on connection loss (hidden when the connection is back):
 
 ```yaml
-serviceworker:
-  offline:
-    snackbar: true
+pwa:
+  serviceworker:
+    offline:
+      snackbar: true
 ```
 
 #### Snackbar
@@ -269,9 +283,10 @@ The default offline page uses the `background_color`, `theme_color` and `theme_c
 Use a custom offline page, by its ID (`offline` by default):
 
 ```yaml
-serviceworker:
-  offline:
-    page: my-offline-page
+pwa:
+  serviceworker:
+    offline:
+      page: my-offline-page
 ```
 
 > [!TIP]
@@ -286,6 +301,35 @@ When `debug: true` is set in the site configuration, the service worker logs its
 
 Messages (snackbar, notification and offline page) are translatable. A French translation is included; add your own in the `translations` directory of your website (e.g.: `messages.de.yml`).
 
+## Upgrade from 2.x
+
+1. Move the `manifest` and `serviceworker` options under the `pwa` key:
+
+   ```yaml
+   # 2.x
+   manifest:
+     theme_color: '#202020'
+   serviceworker:
+     enabled: true
+   ```
+
+   ```yaml
+   # 3.x
+   pwa:
+     manifest:
+       theme_color: '#202020'
+     serviceworker:
+       enabled: true
+   ```
+
+2. In front matter, replace `serviceworker: {precache: false}` with `pwa: {precache: false}`.
+3. If your templates include `partials/regsw.js.twig` directly, include `partials/pwa.html.twig` instead (the registration script is now `partials/pwa/register.html.twig`).
+4. If your styles target `#snackbar`, prefer the `.pwa-snackbar` class and the `--pwa-snackbar-*` custom properties.
+
+> [!NOTE]
+> The 2.x options (at the root of the configuration and in front matter) are still supported but deprecated: when `debug` is enabled, a warning is displayed in the browser console.  
+> Your own `icon.png` and `icon-link.png` files, at the root of the _assets_ directory, still override the theme ones (now in `assets/pwa/`).
+
 ## Tests
 
 The `tests/site` website is built with the theme, then the generated files are tested with Node.js (the service worker runs with a simulated cache and network):
@@ -293,6 +337,7 @@ The `tests/site` website is built with the theme, then the generated files are t
 ```bash
 php tests/link.php
 php cecil.phar build tests/site
+php cecil.phar build tests/site --config=legacy.yml --output=_site-legacy
 node --test tests/pwa.test.mjs
 ```
 
