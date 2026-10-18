@@ -68,11 +68,27 @@
     }]) %}
   {%- endfor %}
 {%- endif %}
+{#- short name: title truncated to 12 characters, without cutting a word #}
+{%- set short_name = site.title %}
+{%- if short_name|length > 12 %}
+  {%- set short_name = '' %}
+  {%- set truncated = false %}
+  {%- for word in site.title|split(' ') %}
+    {%- if not truncated and (short_name ~ ' ' ~ word)|trim|length <= 12 %}
+      {%- set short_name = (short_name ~ ' ' ~ word)|trim %}
+    {%- else %}
+      {%- set truncated = true %}
+    {%- endif %}
+  {%- endfor %}
+  {%- if short_name is empty %}
+    {%- set short_name = site.title[:12] %}
+  {%- endif %}
+{%- endif %}
 {#- main #}
 {%- set display_override = site.manifest.display_override|default('standalone') %}
 {%- set manifest = {
   name: site.manifest.name|default(site.title),
-  short_name: site.manifest.short_name|default(site.title[:12]),
+  short_name: site.manifest.short_name|default(short_name),
   description: site.manifest.description|default(site.description|default('')),
   display_override: display_override is iterable ? display_override : [display_override],
   display: site.manifest.display|default('standalone'),
