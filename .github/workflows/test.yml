@@ -39,7 +39,8 @@ jobs:
       - name: Build test site
         run: |
           php cecil.phar build tests/site -v
-          php cecil.phar build tests/site --config=legacy.yml --output=_site-legacy -v
+          # without `-v`, which disables the debug mode enabled in `legacy.yml`
+          php cecil.phar build tests/site --config=legacy.yml --output=_site-legacy
 
       - name: Run tests
         run: node --test tests/pwa.test.mjs
