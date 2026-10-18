@@ -267,7 +267,7 @@ The `tests/site` website is built with the theme, then the generated files are t
 ```bash
 php tests/link.php
 php cecil.phar build tests/site
-node --test tests/
+node --test tests/pwa.test.mjs
 ```
 
 ## License

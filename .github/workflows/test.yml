@@ -40,4 +40,4 @@ jobs:
         run: php cecil.phar build tests/site -v
 
       - name: Run tests
-        run: node --test tests/
+        run: node --test tests/pwa.test.mjs

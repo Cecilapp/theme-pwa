@@ -1,7 +1,7 @@
 // Tests the files generated from the test site (`tests/site/_site`):
 //   php tests/link.php
 //   php cecil.phar build tests/site
-//   node --test tests/
+//   node --test tests/pwa.test.mjs
 // The service worker runs with an in-memory Cache Storage and a fake network.
 import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
