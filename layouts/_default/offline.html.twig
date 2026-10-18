@@ -34,9 +34,10 @@
       window.addEventListener('online', () => {
         window.location.reload();
       });
+      // checks the requested page with a HEAD request, which is not handled by the service worker
       async function checkNetworkAndReload() {
         try {
-          const response = await fetch('.');
+          const response = await fetch(window.location.href, { method: 'HEAD', cache: 'no-store' });
           if (response.status >= 200 && response.status < 500) {
             window.location.reload();
             return;
@@ -44,7 +45,7 @@
         } catch {
           console.log('Unable to connect to the server');
         }
-        window.setTimeout(checkNetworkAndReload, 2500);
+        window.setTimeout(checkNetworkAndReload, 5000);
       }
       checkNetworkAndReload();
     </script>

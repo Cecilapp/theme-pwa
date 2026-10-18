@@ -1,0 +1,43 @@
+name: Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: mbstring, intl, gettext, fileinfo, gd
+          coverage: none
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download Cecil
+        run: |
+          curl -sSOL https://cecil.app/cecil.phar
+          php cecil.phar --version
+
+      - name: Link theme into the test site
+        run: php tests/link.php
+
+      - name: Build test site
+        run: php cecil.phar build tests/site -v
+
+      - name: Run tests
+        run: node --test tests/
