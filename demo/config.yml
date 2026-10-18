@@ -14,17 +14,18 @@ languages:
     locale: fr_FR
     config:
       baseline: Transformez un site Cecil en Progressive Web App.
+      # page IDs: `url()` returns the URL of the page in the current language
       menus:
         main:
-          - {id: index, name: Accueil, url: /fr/, weight: 10}
-          - {id: precached, name: Page précachée, url: /fr/precached/, weight: 20}
-          - {id: uncached, name: Page non cachée, url: /fr/uncached/, weight: 30}
+          - {id: index, name: Accueil, url: index, weight: 10}
+          - {id: precached, name: Page précachée, url: precached, weight: 20}
+          - {id: uncached, name: Page non cachée, url: uncached, weight: 30}
           - {id: github, name: GitHub, url: 'https://github.com/Cecilapp/theme-pwa', weight: 40}
 menus:
   main:
-    - {id: index, name: Home, url: /, weight: 10}
-    - {id: precached, name: Precached page, url: /precached/, weight: 20}
-    - {id: uncached, name: Uncached page, url: /uncached/, weight: 30}
+    - {id: index, name: Home, url: index, weight: 10}
+    - {id: precached, name: Precached page, url: precached, weight: 20}
+    - {id: uncached, name: Uncached page, url: uncached, weight: 30}
     - {id: github, name: GitHub, url: 'https://github.com/Cecilapp/theme-pwa', weight: 40}
 pwa:
   manifest:
