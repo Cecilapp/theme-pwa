@@ -55,6 +55,8 @@
       }
       .pwa-snackbar button {
         flex: none;
+        display: flex;
+        align-items: center;
         margin: 0;
         padding: 6px 8px;
         border: 0;
@@ -62,15 +64,32 @@
         background: none;
         color: var(--pwa-snackbar-action-color);
         font: inherit;
-        font-weight: bold;
+        font-weight: 500;
         cursor: pointer;
       }
+      .pwa-snackbar .pwa-snackbar-action {
+        /* label trimmed to its capitals, to be optically centered like the close icon */
+        display: block;
+        padding-block: 11px;
+        text-box: trim-both cap alphabetic;
+      }
       .pwa-snackbar .pwa-snackbar-close {
+        /* same visual spacing between the message, the action and the close button */
+        margin-inline-start: -8px;
         color: inherit;
-        font-weight: normal;
       }
       .pwa-snackbar button:focus-visible {
         outline: 2px solid currentColor;
+      }
+      @media (max-width: 599px) {
+        .pwa-snackbar {
+          left: 16px;
+          right: 16px;
+          bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+          transform: none;
+          min-width: 0;
+          max-width: none;
+        }
       }
       @media (prefers-reduced-motion: reduce) {
         .pwa-snackbar {
@@ -115,6 +134,7 @@
           if (options.action) {
             const action = document.createElement('button');
             action.type = 'button';
+            action.className = 'pwa-snackbar-action';
             action.textContent = options.action.label;
             action.addEventListener('click', () => {
               hide();
@@ -127,7 +147,7 @@
             close.type = 'button';
             close.className = 'pwa-snackbar-close';
             close.setAttribute('aria-label', '{{ 'Close'|trans|e('js') }}');
-            close.textContent = '✕';
+            close.innerHTML = '<svg viewBox="0 0 12 12" width="16" height="16" aria-hidden="true"><path d="M1.5 1.5l9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>';
             close.addEventListener('click', hide);
             snackbar.append(close);
           } else {
