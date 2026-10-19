@@ -3,11 +3,13 @@ pages:
     manifest:
       path: manifest
       output: webmanifest
+      excluded: true
     serviceworker:
       path: serviceworker
       layout: serviceworker
       output: js
       multilingual: false
+      excluded: true
       pwa:
         precache: false
     offline:
@@ -15,6 +17,7 @@ pages:
       layout: offline
       output: html
       uglyurl: true
+      excluded: true
 pwa:
   manifest:
     background_color: '#FFFFFF'
