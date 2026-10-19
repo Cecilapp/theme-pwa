@@ -1,6 +1,6 @@
     {#- snackbar ~#}
     {%- if sw.update.snackbar|default(false) or sw.offline.snackbar|default(false) ~%}
-    {{ include('partials/pwa/snackbar.html.twig', {site}, with_context = false) }}
+    {{- include('partials/pwa/snackbar.html.twig', {site}, with_context = false) ~}}
     {%- endif ~%}
     {#- service worker registration ~#}
     <script>{% apply minify_js ~%}
