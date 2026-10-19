@@ -2,14 +2,19 @@
     {%- if sw.update.snackbar|default(false) or sw.offline.snackbar|default(false) ~%}
     {{- include('partials/pwa/snackbar.html.twig', {site}, with_context = false) ~}}
     {%- endif ~%}
-    {#- service worker registration ~#}
+    {#- service worker registration (only if the `serviceworker` page exists, otherwise `url()` would fall back to the home page) ~#}
+    {%- set sw_page = site.page('serviceworker') %}
+    {%- set sw_enabled = (sw.enabled ?? false) and sw_page is not null ~%}
     <script>{% apply minify_js ~%}
+      {%- if (sw.enabled ?? false) and sw_page is null and site.debug|default(false) ~%}
+      console.warn('[SW] The "serviceworker" page is missing: check that `pages.default` of the configuration is not overridden by a list.');
+      {%- endif ~%}
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          {%- if sw.enabled ?? false ~%}
+          {%- if sw_enabled ~%}
           // register service worker (default scope: the directory of the script, i.e. the base URL)
           navigator.serviceWorker
-            .register('{{ url(site.page('serviceworker'), {canonical: true})|e('js') }}')
+            .register('{{ url(sw_page, {canonical: true})|e('js') }}')
             .then(function (registration) {
               {%- if site.debug|default(false) ~%}
               console.log('[SW] Registration successful with scope', registration.scope);
@@ -87,7 +92,7 @@
               console.log('[SW]', error);
             });
           {%- endif ~%}
-          {%- if not (sw.enabled ?? false) ~%}
+          {%- if not sw_enabled ~%}
           // Service worker is disabled:
           // 1. unregister
           navigator.serviceWorker.getRegistrations().then(registrations => {
