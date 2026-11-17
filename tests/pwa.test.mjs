@@ -24,6 +24,9 @@ describe('Web manifest', () => {
       assert.equal(manifest.name, 'L\'atelier "test" & co');
       assert.equal(manifest.short_name, 'L\'atelier');
       assert.equal(manifest.lang, file.startsWith('fr') ? 'fr' : 'en');
+      // same-origin URLs, whatever the domain the website is served from
+      assert.equal(manifest.start_url, file.startsWith('fr') ? '/my-repo/fr/' : '/my-repo/');
+      assert.equal(manifest.id, manifest.start_url);
       assert.deepEqual(manifest.display_override, ['window-controls-overlay', 'standalone']);
       assert.equal(manifest.icons.length, 4);
       assert.ok(manifest.icons.every(icon => icon.src.startsWith('/my-repo/')));
@@ -44,8 +47,11 @@ describe('Inline scripts', () => {
     });
   }
 
-  test('the service worker is registered without a hardcoded scope', () => {
-    assert.match(read('index.html'), /\.register\('[^']*serviceworker\.js'\)/);
+  test('the service worker is registered without a hardcoded scope, with a same-origin URL', () => {
+    // an absolute URL would fail when the website is served from another domain (e.g. a redirection)
+    for (const file of ['index.html', 'fr/index.html']) {
+      assert.match(read(file), /\.register\('\\\/my\\u002Drepo\\\/serviceworker\.js'\)/);
+    }
   });
 
   test('the snackbar is an accessible live region', () => {
