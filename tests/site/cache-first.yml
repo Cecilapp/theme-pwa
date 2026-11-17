@@ -1,0 +1,5 @@
+# Cache-first strategy for pages (built in `_site-cache-first`)
+pwa:
+  serviceworker:
+    cache:
+      strategy: cache-first

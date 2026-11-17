@@ -3,6 +3,7 @@
 //   php cecil.phar build tests/site
 //   php cecil.phar build tests/site --config=legacy.yml --output=_site-legacy
 //   php cecil.phar build tests/site --config=autoescape.yml --output=_site-autoescape
+//   php cecil.phar build tests/site --config=cache-first.yml --output=_site-cache-first
 //   node --test tests/pwa.test.mjs
 // The service worker runs with an in-memory Cache Storage and a fake network.
 import { test, describe, beforeEach } from 'node:test';
@@ -47,11 +48,22 @@ describe('Inline scripts', () => {
     assert.match(read('index.html'), /\.register\('[^']*serviceworker\.js'\)/);
   });
 
-  test('the snackbar is an accessible live region with a reload action', () => {
+  test('the snackbar is an accessible live region', () => {
     const html = read('index.html');
     assert.match(html, /\.pwa-snackbar\{/);
     assert.match(html, /setAttribute\(.role.,.status.\)/);
-    assert.match(html, /callback:\(\)=>window\.location\.reload\(\)/);
+  });
+
+  test('update snackbar (network-first): informative message, without reload', () => {
+    const html = read('fr/index.html');
+    assert.match(html, /pwaSnackbar\.show\('Le\\u0020site\\u0020a\\u0020[^']*jour'\)/);
+    assert.doesNotMatch(html, /location\.reload\(\)/);
+  });
+
+  test('update snackbar (cache-first): reload offered once the new version controls the page', () => {
+    const html = fs.readFileSync(path.join(SITE, '..', '_site-cache-first', 'index.html'), 'utf8');
+    new vm.Script([...html.matchAll(/<script>(.*?)<\/script>/gs)].map(m => m[1]).join(';'));
+    assert.match(html, /addEventListener\('controllerchange',\(\)=>\{pwaSnackbar\.show\('New[^']*',\{action:\{label:'Reload',callback:\(\)=>window\.location\.reload\(\)\}\}\)\},\{once:!0\}\)/);
   });
 });
 
@@ -60,8 +72,8 @@ describe('Deprecated 2.x options (root `manifest` and `serviceworker` keys)', ()
 
   test('are still applied', () => {
     assert.equal(JSON.parse(readLegacy('manifest.webmanifest')).theme_color, '#FF0000');
-    assert.doesNotMatch(readLegacy('index.html'), /pwaSnackbar\.show\('New/);
-    assert.match(read('index.html'), /pwaSnackbar\.show\('New/);
+    assert.doesNotMatch(readLegacy('index.html'), /pwaSnackbar\.show\('The/);
+    assert.match(read('index.html'), /pwaSnackbar\.show\('The/);
   });
 
   test('display a warning in debug mode only', () => {
