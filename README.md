@@ -2,7 +2,7 @@
 
 The _PWA_ component theme for [Cecil](https://cecil.app) provides helpers to implement a [Web manifest](https://developer.mozilla.org/docs/Web/Manifest) and a [service worker](https://developer.mozilla.org/docs/Web/API/Service_Worker_API) to turn a website into a [Progressive Web App](https://web.dev/explore/progressive-web-apps).
 
-**[Demo](https://cecilapp.github.io/theme-pwa/)**
+**[Demo](https://demo.cecil.app/theme-pwa/)**
 
 ![Screenshot of a website using the PWA component theme: custom install button, snackbar and offline page](docs/screenshot.png)
 
@@ -336,7 +336,7 @@ Messages (snackbar, notification and offline page) are translatable. A French tr
 
 ## Demo
 
-The `demo` website is deployed to [GitHub Pages](https://cecilapp.github.io/theme-pwa/) on each push to `master`. To run it locally:
+The `demo` website is deployed to [GitHub Pages](https://demo.cecil.app/theme-pwa/) on each push to `master`. To run it locally:
 
 ```bash
 php demo/link.php
