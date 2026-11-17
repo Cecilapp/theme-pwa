@@ -14,7 +14,7 @@
           {%- if sw_enabled ~%}
           // register service worker (default scope: the directory of the script, i.e. the base URL)
           navigator.serviceWorker
-            .register('{{ url(sw_page, {canonical: true})|e('js') }}')
+            .register('{{ url(sw_page, {canonical: false})|e('js') }}')
             .then(function (registration) {
               {%- if site.debug|default(false) ~%}
               console.log('[SW] Registration successful with scope', registration.scope);
