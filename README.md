@@ -247,7 +247,9 @@ pwa:
 
 > [!NOTE]
 > Enabling `notification` asks the user for permission to display notifications.  
-> The update snackbar stays displayed, with a _Reload_ button, until the user reloads or closes it.
+> The new version is activated immediately, so the update snackbar depends on the pages strategy:
+> - `network-first`: the displayed page already comes from the network, the snackbar only informs that the website has been updated;
+> - `cache-first`: the displayed page may be outdated, the snackbar offers a _Reload_ button once the new version controls the page, and stays displayed until the user reloads or closes it.
 
 Display a snackbar on connection loss (hidden when the connection is back):
 

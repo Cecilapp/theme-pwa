@@ -4,3 +4,4 @@ _site/
 themes/
 _site-legacy/
 _site-autoescape/
+_site-cache-first/

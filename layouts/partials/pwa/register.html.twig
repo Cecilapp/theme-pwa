@@ -26,17 +26,26 @@
                 {%- if site.debug|default(false) ~%}
                 console.log('[SW] A new version is being installed:', installingSW.state);
                 {%- endif ~%}
+                {%- if sw.update.snackbar|default(false) and (sw.cache.strategy ?? 'network-first') == 'cache-first' ~%}
+                // snackbar (cache-first): the displayed page may come from the previous cache,
+                // reloading is offered once the new version controls the page (it activates itself immediately)
+                if (navigator.serviceWorker.controller) {
+                  navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    pwaSnackbar.show('{{ "New version is available, please reload"|trans|e('js') }}', {
+                      action: { label: '{{ "Reload"|trans|e('js') }}', callback: () => window.location.reload() }
+                    });
+                  }, { once: true });
+                }
+                {%- endif ~%}
                 installingSW.onstatechange = () => {
                   if (installingSW.state === 'installed') {
                     if (navigator.serviceWorker.controller) {
                       {%- if site.debug|default(false) ~%}
                       console.log('[SW] New version is available.');
                       {%- endif ~%}
-                      {%- if sw.update.snackbar|default(false) ~%}
-                      // snackbar
-                      pwaSnackbar.show('{{ "New version is available, please reload"|trans|e('js') }}', {
-                        action: { label: '{{ "Reload"|trans|e('js') }}', callback: () => window.location.reload() }
-                      });
+                      {%- if sw.update.snackbar|default(false) and (sw.cache.strategy ?? 'network-first') != 'cache-first' ~%}
+                      // snackbar (network-first): the displayed page comes from the network, it is already up to date
+                      pwaSnackbar.show('{{ "The website has been updated"|trans|e('js') }}');
                       {%- endif ~%}
                       {%- if sw.update.badge|default(false) ~%}
                       // badge
