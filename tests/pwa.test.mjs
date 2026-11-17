@@ -278,4 +278,27 @@ describe('Service worker', () => {
     assert.equal(store.size, 1);
     assert.equal(await cached(BASE), 'home v1');
   });
+
+  test('update (cache-first): pages are downloaded again, other files are reused', async () => {
+    store.clear();
+    await lifecycle(loadSW({ strategy: 'cache-first' }));
+    net.files[BASE] = 'home v2';
+    net.files[BASE + 'style.css'] = 'css v2';
+    await request(sw, BASE + 'style.css');
+    net.calls = [];
+    const swV2 = loadSW({ version: '2', strategy: 'cache-first' });
+    await lifecycle(swV2);
+    assert.ok(net.calls.includes('GET ' + BASE));
+    assert.ok(!net.calls.some(call => call.includes('icon')), 'icons are reused');
+    assert.equal(store.size, 1);
+    assert.equal((await request(swV2, BASE, { page: true })).text, 'home v2');
+  });
+
+  test('update (cache-first): the previous page is kept when it cannot be downloaded', async () => {
+    store.clear();
+    await lifecycle(loadSW({ strategy: 'cache-first' }));
+    net.online = false;
+    await lifecycle(loadSW({ version: '2', strategy: 'cache-first' }));
+    assert.equal(await cached(BASE), 'home v1');
+  });
 });

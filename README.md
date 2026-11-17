@@ -212,7 +212,7 @@ pwa:
 Set the caching strategy of pages (HTML):
 
 - `network-first` (default): pages are always fetched from the network when online, the cached copy is used when offline
-- `cache-first`: pages are served from the cache when available, faster but possibly outdated until the next service worker update
+- `cache-first`: pages are served from the cache when available, faster but possibly outdated until the next update of the website (the new service worker downloads them again)
 
 ```yaml
 pwa:
@@ -223,7 +223,7 @@ pwa:
 
 > [!NOTE]
 > Other resources (CSS, JavaScript, images, etc.) are served from the cache and refreshed in the background (_stale-while-revalidate_). Cross-origin images are not cached, but replaced by a placeholder when offline.  
-> When the website is updated, the new service worker reuses the responses already cached instead of downloading all precached files again.
+> When the website is updated, the new service worker reuses the responses already cached instead of downloading all precached files again (except pages with the `cache-first` strategy).
 
 Set the [cache mode](https://developer.mozilla.org/docs/Web/API/Request/cache) of precache requests (`reload` by default, or `default`):
 

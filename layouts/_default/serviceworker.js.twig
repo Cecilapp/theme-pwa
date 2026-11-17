@@ -24,8 +24,12 @@ OFFLINE_PAGES.push({ prefix: '{{ url(home_page, {canonical: false})|e('js') }}',
 // the most specific prefix first (e.g. "/fr/" before "/")
 OFFLINE_PAGES.sort((a, b) => b.prefix.length - a.prefix.length);
 
+// pages (HTML) strategy: 'network-first' or 'cache-first'
+var PAGES_STRATEGY = '{{ sw.cache.strategy|default('network-first')|e('js') }}';
+
 // prepares precache
 var precache = [];
+var precachePages = [];
 {% if sw.install.precache.icons ?? false and manifest.icons|default([])|length > 0 %}
 // icons
   {%- for icon in manifest.icons|default([]) %}
@@ -39,7 +43,7 @@ precache.push('{{ asset(icon)|url({canonical: false})|e('js') }}');
 // pages
 {% set pages_to_precache = site.allpages|filter(p => p.published == true and p.redirect is not defined and (p.pwa.precache ?? p.serviceworker.precache ?? true) != false)|sort((a, b) => a.path > b.path) %}
 {% for page in pages_to_precache|slice(0, (sw.install.precache.pages.limit ?? false) == false ? pages_to_precache|length : sw.install.precache.pages.limit) %}
-precache.push('{{ url(page, {canonical: false})|e('js') }}');
+precachePages.push('{{ url(page, {canonical: false})|e('js') }}');
 {% endfor %}
 {%- block precache %}{% endblock -%}
 {% if sw.install.precache.assets is defined %}
@@ -50,9 +54,9 @@ precache.push('{{ asset(file)|url({canonical: false})|e('js') }}');
 {% endif %}
 // offline pages are always precached
 OFFLINE_PAGES.forEach(function (offline) {
-  precache.push(offline.url);
+  precachePages.push(offline.url);
 });
-precache = [...new Set(precache)];
+precache = [...new Set([...precache, ...precachePages])];
 
 // install and precache
 self.addEventListener('install', function(event) {
@@ -66,15 +70,22 @@ self.addEventListener('install', function(event) {
       console.log(`[SW] Create cache storage "${CACHE}"`);
       {%- endif ~%}
       return Promise.allSettled(precache.map(async function (path) {
-        // reuses the response stored by a previous version, if any (refreshed later by the fetch strategies)
+        // reuses the response stored by a previous version, if any (refreshed later by the fetch strategies),
+        // except pages in cache-first, never refreshed afterwards: they are downloaded again
         const cached = await caches.match(path);
-        if (cached) {
+        if (cached && !(PAGES_STRATEGY === 'cache-first' && precachePages.includes(path))) {
           return cache.put(path, cached);
         }
         {%- if site.debug|default(false) ~%}
         console.log('[SW] Precache', path);
         {%- endif ~%}
-        return cache.add(new Request(path, {cache: '{{ sw.cache.request|default('reload')|e('js') }}'})).catch(error => console.error(`[SW] Can't add "${path}" to cache`));
+        return cache.add(new Request(path, {cache: '{{ sw.cache.request|default('reload')|e('js') }}'})).catch(error => {
+          // keeps the previous version rather than nothing
+          if (cached) {
+            return cache.put(path, cached);
+          }
+          console.error(`[SW] Can't add "${path}" to cache`);
+        });
       }));
     })
   );
@@ -102,9 +113,6 @@ self.addEventListener('activate', function(event) {
   };
   event.waitUntil(activate());
 });
-
-// pages (HTML) strategy: 'network-first' or 'cache-first'
-var PAGES_STRATEGY = '{{ sw.cache.strategy|default('network-first')|e('js') }}';
 
 // is it a page request?
 function isPage(request) {
